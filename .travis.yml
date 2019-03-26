@@ -1,0 +1,18 @@
+sudo: required
+
+# Go for Kubernetes in Docker
+language: go
+go:
+  - '1.11.x'
+
+services:
+- docker
+
+before_script:
+
+script:
+- set -e # Fail fast
+- make iofog-pull # Pull all ioFog images and packages
+- make kind-deploy # Deploy Kubernetes locally
+- make iofog-deploy # Deploy ioFog services
+- make test # Test ioFog services
