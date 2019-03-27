@@ -19,31 +19,33 @@ var-%: ; @echo $($*)
 varexport-%: ; @echo $*=$($*)
 
 # Target rules
-.PHONY: kubectl kind-install kind-deploy minikube iofog-pull iofog-deploy test push teardown list help
+.PHONY: install-kubectl install-kind deploy-kind install-minikube deploy-minikube pull-iofog deploy-iofog test push-iofog rm-minikube rm-kind list help
 .DEFAULT_GOAL := help
 
 # Targets
-kubectl: # Install Kubernetes CLI
+install-kubectl: # Install Kubernetes CLI
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	chmod +x kubectl 
 	sudo mv kubectl /usr/local/bin/
 
-kind-install: # Install Kubernetes in Docker
+install-kind: # Install Kubernetes in Docker
 	go get sigs.k8s.io/kind
 	kind create cluster
 
-kind-deploy: kubectl kind-install # Deploy Kubernetes locally with KinD
+deploy-kind: install-kubectl install-kind# Deploy Kubernetes locally with KinD
 	KUBECONFIG=$(shell kind get kubeconfig-path) kubectl cluster-info
 	KUBECONFIG=$(shell kind get kubeconfig-path) kubectl get pods --all-namespaces -o wide
 
-minikube: kubectl # Deploy kubernetes locally with minikube
+install-minikube: # Install Minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-linux-amd64
 	chmod +x minikube
 	sudo mv minikube /usr/local/bin/
+
+deploy-minikube: install-kubectl install-minikube # Deploy kubernetes locally with minikube
 	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
 	sudo minikube update-context
 
-iofog-pull: # Pull ioFog packages
+pull-iofog: # Pull ioFog packages
 	@for IMG in $(IOFOG_IMGS) ; do \
 		docker pull $$IMG:dev ; \
 	done
@@ -55,21 +57,22 @@ iofog-pull: # Pull ioFog packages
 		npm install -g iofog$$PKG --unsafe-perm ; \
 	done
 
-iofog-deploy: # Deploy ioFog services
+deploy-iofog: pull-iofog # Deploy ioFog services
 	docker-compose up --detach
 
 test: # Run system tests against ioFog services
 	@echo 'TODO: Write system tests :)'
 
-push: # Push ioFog packages
+push-iofog: # Push ioFog packages
 	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin
 	for IMG in $(IOFOG_IMGS) ; do \
 		docker push $(IMAGE):$(TAG) ; \
 	done
 
-teardown: # Spin down ioFog services and Kubernetes
-	docker-compose down
+rm-kind: # Remove KinD cluster
 	kind delete cluster
+
+rm-minikube: # Remove Minikube cluster
 	sudo minikube stop
 	sudo minikube delete
 

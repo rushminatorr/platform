@@ -12,7 +12,6 @@ before_script:
 
 script:
 - set -e # Fail fast
-- make iofog-pull # Pull all ioFog images and packages
-- make kind-deploy # Deploy Kubernetes locally
-- make iofog-deploy # Deploy ioFog services
+- make deploy-kind # Deploy Kubernetes locally
+- make deploy-iofog # Deploy ioFog services
 - make test # Test ioFog services
