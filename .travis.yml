@@ -11,7 +11,8 @@ services:
 before_script:
 
 script:
-- set -e # Fail fast
-- make deploy-kind # Deploy Kubernetes locally
-- make deploy-iofog # Deploy ioFog services
-- make test # Test ioFog services
+- set -e                  # Fail fast
+- make deploy-kind        # Deploy Kubernetes locally
+- make deploy-iofog       # Deploy ioFog services
+#- make test              # Test ioFog services
+- TAG=rel make push-iofog # Push release packages
