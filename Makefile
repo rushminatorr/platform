@@ -11,6 +11,13 @@ BUILD_DATE ?= $(shell date +%FT%T%z)
 K8S_VERSION ?= 1.13.4
 MINIKUBE_VERSION ?= 0.35.0
 COMPOSE=build/docker-compose.yml
+COMPOSE_SVCS = iofog-agent-1 iofog-agent-2 iofog-controller iofog-connector iofog-kubelet
+
+# KinD variables
+KUBECONFIG=$(shell kind get kubeconfig-path)
+export KUBECONFIG
+PORT=$(shell KUBECONFIG=$(KUBECONFIG) kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev)
+export PORT
 
 # Variable outputting/exporting rules
 var-%: ; @echo $($*)
@@ -31,7 +38,6 @@ install-kubectl: # Install Kubernetes CLI
 
 install-kind: # Install Kubernetes in Docker
 	go get sigs.k8s.io/kind
-	kind create cluster
 
 install-minikube: # Install Minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-linux-amd64
@@ -39,8 +45,9 @@ install-minikube: # Install Minikube
 	sudo mv minikube /usr/local/bin/
 
 deploy-kind: install-kubectl install-kind# Deploy Kubernetes locally with KinD
-	KUBECONFIG=$(shell kind get kubeconfig-path) kubectl cluster-info
-	KUBECONFIG=$(shell kind get kubeconfig-path) kubectl get pods --all-namespaces -o wide
+	kind create cluster
+	kubectl cluster-info
+	kubectl get pods --all-namespaces -o wide
 
 deploy-minikube: install-kubectl install-minikube # Deploy kubernetes locally with minikube
 	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
@@ -49,7 +56,10 @@ deploy-minikube: install-kubectl install-minikube # Deploy kubernetes locally wi
 deploy-iofog: # Deploy ioFog services
 	docker-compose -f $(COMPOSE) pull
 	docker-compose -f $(COMPOSE) build
-	docker-compose -f $(COMPOSE) up --detach
+	docker-compose -f $(COMPOSE) up --detach $(COMPOSE_SVCS)
+	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
+	kubectl create -f deploy/operator.yml
+	kubectl create -f deploy/scheduler.yml
 
 test: # Run system tests against ioFog services
 	@echo 'TODO: Write system tests :)'
@@ -71,6 +81,9 @@ rm-minikube: # Remove Minikube cluster
 rm-iofog: # Remove iofog services
 	docker-compose -f $(COMPOSE) stop
 	docker-compose -f $(COMPOSE) down
+	kubectl delete -f deploy/operator.yml
+	rm deploy/operator.yml
+	kubectl delete -f deploy/scheduler.yml
 
 list: ## List all make targets
 	@$(MAKE) -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort

@@ -5,14 +5,24 @@ language: go
 go:
   - '1.11.x'
 
-services:
-- docker
+dist: xenial
 
-before_script:
+services:
+  - docker
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.22.0
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 script:
-- set -e                  # Fail fast
-- make deploy-kind        # Deploy Kubernetes locally
-- make deploy-iofog       # Deploy ioFog services
-#- make test              # Test ioFog services
-- TAG=rel make push-iofog # Push release packages
+  - make --version
+  - set -e                  # Fail fast
+  - make deploy-kind        # Deploy Kubernetes locally
+  - make deploy-iofog       # Deploy ioFog services
+  - make test               # Test ioFog services
+  - TAG=rel make push-iofog # Push release packages
