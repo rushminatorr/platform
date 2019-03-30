@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iofog-scheduler-deployment
+  name: iofog-scheduler
   labels:
     app: iofog-scheduler
 spec:

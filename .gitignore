@@ -1,1 +1,3 @@
 deploy/operator.yml
+
+.terraform/

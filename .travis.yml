@@ -10,9 +10,9 @@ dist: xenial
 services:
   - docker
 
+# Default Travis version of compose does not suffice
 env:
   - DOCKER_COMPOSE_VERSION=1.22.0
-
 before_install:
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -20,9 +20,11 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 script:
-  - set -e                      # Fail fast
-  - make install-kubectl-linux  # Kubernetes CLI
-  - make deploy-kind            # Deploy Kubernetes locally
-  - make deploy-iofog           # Deploy ioFog services
-  - make test                   # Test ioFog services
-  - TAG=rel make push-iofog     # Push release packages
+  - set -e                        # Fail fast
+  - make install-kubectl-linux    # Kubernetes CLI
+  - make install-terraform-linux  # Terraform CLI
+  - make install-gcloud-linux     # GCP CLI
+  - make deploy-iofog-gcp         # Deploy Kubernetes cluster on GKE and deploy ioFog services on cluster
+  - make test                     # Test ioFog services
+  - make rm-gcp                   # Teardown cluster
+  - TAG=rel make push-imgs        # Push release packages
