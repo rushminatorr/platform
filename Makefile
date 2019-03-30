@@ -10,69 +10,101 @@ COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_DATE ?= $(shell date +%FT%T%z)
 K8S_VERSION ?= 1.13.4
 MINIKUBE_VERSION ?= 0.35.0
-COMPOSE=build/docker-compose.yml
-COMPOSE_SVCS = iofog-agent-1 iofog-agent-2 iofog-controller iofog-connector iofog-kubelet
+SVCS = agent connector controller kubelet operator scheduler
 
 # Install targets
-.PHONY: install-kubectl-linux install-kind install-minikube
-install-kubectl-linux: # Install Kubernetes CLI
+.PHONY: install-kubectl-linux
+install-kubectl-linux:
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	chmod +x kubectl 
 	sudo mv kubectl /usr/local/bin/
-install-kind: # Install Kubernetes in Docker
+
+.PHONY: install-kind
+install-kind:
 	go get sigs.k8s.io/kind
-install-minikube: # Install Minikube
+
+.PHONY: install-minikube-linux
+install-minikube-linux:
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-linux-amd64
 	chmod +x minikube
 	sudo mv minikube /usr/local/bin/
 
+.PHONY: install-terraform-linux
+install-terraform-linux:
+	curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip
+	sudo unzip -q terraform.zip -d /opt/terraform
+	sudo ln -s /opt/terraform/terraform /usr/bin/terraform
+	rm -f terraform.zip
+
+.PHONY: install-gcloud-linux
+install-gcloud-linux:
+	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-linux-x86_64.tar.gz
+	tar -xf gcloud.tar.gz
+	google-cloud-sdk/install.sh -q
+
 # Deploy targets
-.PHONY: deploy-kind deploy-minikube deploy-iofog
-deploy-kind: install-kind # Deploy Kubernetes locally with KinD
+.PHONY: deploy-gcp
+deploy-gcp:
+	@echo '$(GCP_SVC_ACC)' > creds/svcacc.json
+	gcloud auth activate-service-account --key-file=creds/svcacc.json
+	gcloud config set project edgeworx
+	terraform init deploy/gcp
+	terraform apply -auto-approve deploy/gcp 
+	gcloud container clusters get-credentials ci-cluster --zone='australia-southeast1'
+
+.PHONY: deploy-kind 
+deploy-kind: install-kind
 	kind create cluster
 	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
 	kubectl cluster-info
-	kubectl get pods --all-namespaces -o wide
-deploy-minikube: install-minikube # Deploy kubernetes locally with minikube
+
+.PHONY: deploy-minikube
+deploy-minikube: install-minikube
 	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
 	sudo minikube update-context
-deploy-iofog: # Deploy ioFog services
-	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
-	$(eval PORT=$(shell KUBECONFIG=$(KUBECONFIG) kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
-	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
-	kubectl create -f deploy/operator.yml
-	kubectl create -f deploy/scheduler.yml
-	docker-compose -f $(COMPOSE) pull
-	docker-compose -f $(COMPOSE) build
-	docker-compose -f $(COMPOSE) up --detach $(COMPOSE_SVCS)
 
-# Validate and publish targets
-.PHONY: test push-iofog
-test: # Run system tests against ioFog services
+.PHONY: deploy-iofog-%
+deploy-iofog-%: deploy-%
+	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
+	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
+	@for SVC in $(SVCS) ; do \
+		kubectl create -f deploy/$$SVC.yml ; \
+	done
+
+# Teardown targets
+.PHONY: rm-gcp
+rm-gcp:
+	@echo '$(GCP_SVC_ACC)' > creds/svcacc.json
+	terraform destroy -auto-approve deploy/gcp 
+
+.PHONY: rm-kind
+rm-kind:
+	kind delete cluster
+
+.PHONY: rm-minikube
+rm-minikube:
+	sudo minikube stop
+	sudo minikube delete
+
+.PHONY: rm-iofog
+rm-iofog:
+	@for SVC in $(SVCS) ; do \
+		kubectl delete -f deploy/$$SVC.yml ; \
+	done
+
+# Util targets
+.PHONY: test
+test:
 	@echo 'TODO: Write system tests :)'
-push-iofog: # Push ioFog packages
+
+.PHONY: push-imgs
+push-imgs:
 	@echo 'TODO :)'
 #	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin
 #	for IMG in $(IOFOG_IMGS) ; do \
 #		docker push $(IMAGE):$(TAG) ; \
 #	done
 
-# Remove targets
-.PHONY: rm-kind rm-minikube rm-iofog
-rm-kind: # Remove KinD cluster
-	kind delete cluster
-rm-minikube: # Remove Minikube cluster
-	sudo minikube stop
-	sudo minikube delete
-rm-iofog: # Remove iofog services
-	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
-	kubectl delete -f deploy/operator.yml
-	rm deploy/operator.yml
-	kubectl delete -f deploy/scheduler.yml
-	docker-compose -f $(COMPOSE) stop
-	docker-compose -f $(COMPOSE) down
-
-# Util targets
 .PHONY: list help
 .DEFAULT_GOAL := help
 list: ## List all make targets

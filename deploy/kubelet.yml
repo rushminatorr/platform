@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iofog-kubelet
+  labels:
+    app: iofog-kubelet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iofog-kubelet
+  template:
+    metadata:
+      labels:
+        app: iofog-kubelet
+    spec:
+      containers:
+      - name: iofog-kubelet
+        image: iofog/iofog-kubelet:dev
+        args: ["--namespaces default", "--disable-taint", "--iofog-token 5e7528e3493481c42a8e0c7e77f521283c0c48215a6480b03d994241537ff725", "--iofog-url http://localhost:51121"]
