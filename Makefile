@@ -13,57 +13,43 @@ MINIKUBE_VERSION ?= 0.35.0
 COMPOSE=build/docker-compose.yml
 COMPOSE_SVCS = iofog-agent-1 iofog-agent-2 iofog-controller iofog-connector iofog-kubelet
 
-# KinD variables
-KUBECONFIG=$(shell kind get kubeconfig-path)
-export KUBECONFIG
-PORT=$(shell KUBECONFIG=$(KUBECONFIG) kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev)
-export PORT
-
-# Variable outputting/exporting rules
-var-%: ; @echo $($*)
-varexport-%: ; @echo $*=$($*)
-
-# Target rules
+# Install targets
 .PHONY: install-kubectl-linux install-kind install-minikube
-.PHONY: deploy-kind deploy-minikube deploy-iofog
-.PHONY: rm-kind rm-minikube rm-iofog
-.PHONY: list help
-.DEFAULT_GOAL := help
-
-# Targets
 install-kubectl-linux: # Install Kubernetes CLI
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	chmod +x kubectl 
 	sudo mv kubectl /usr/local/bin/
-
 install-kind: # Install Kubernetes in Docker
 	go get sigs.k8s.io/kind
-
 install-minikube: # Install Minikube
 	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-linux-amd64
 	chmod +x minikube
 	sudo mv minikube /usr/local/bin/
 
+# Deploy targets
+.PHONY: deploy-kind deploy-minikube deploy-iofog
 deploy-kind: install-kind # Deploy Kubernetes locally with KinD
 	kind create cluster
+	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
 	kubectl cluster-info
 	kubectl get pods --all-namespaces -o wide
-
 deploy-minikube: install-minikube # Deploy kubernetes locally with minikube
 	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
 	sudo minikube update-context
-
 deploy-iofog: # Deploy ioFog services
-	docker-compose -f $(COMPOSE) pull
-	docker-compose -f $(COMPOSE) build
-	docker-compose -f $(COMPOSE) up --detach $(COMPOSE_SVCS)
+	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
+	$(eval PORT=$(shell KUBECONFIG=$(KUBECONFIG) kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
 	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
 	kubectl create -f deploy/operator.yml
 	kubectl create -f deploy/scheduler.yml
+	docker-compose -f $(COMPOSE) pull
+	docker-compose -f $(COMPOSE) build
+	docker-compose -f $(COMPOSE) up --detach $(COMPOSE_SVCS)
 
+# Validate and publish targets
+.PHONY: test push-iofog
 test: # Run system tests against ioFog services
 	@echo 'TODO: Write system tests :)'
-
 push-iofog: # Push ioFog packages
 	@echo 'TODO :)'
 #	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin
@@ -71,23 +57,29 @@ push-iofog: # Push ioFog packages
 #		docker push $(IMAGE):$(TAG) ; \
 #	done
 
+# Remove targets
+.PHONY: rm-kind rm-minikube rm-iofog
 rm-kind: # Remove KinD cluster
 	kind delete cluster
-
 rm-minikube: # Remove Minikube cluster
 	sudo minikube stop
 	sudo minikube delete
-
 rm-iofog: # Remove iofog services
-	docker-compose -f $(COMPOSE) stop
-	docker-compose -f $(COMPOSE) down
+	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
 	kubectl delete -f deploy/operator.yml
 	rm deploy/operator.yml
 	kubectl delete -f deploy/scheduler.yml
+	docker-compose -f $(COMPOSE) stop
+	docker-compose -f $(COMPOSE) down
 
+# Util targets
+.PHONY: list help
+.DEFAULT_GOAL := help
 list: ## List all make targets
 	@$(MAKE) -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort
-
 help:
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+# Variable outputting/exporting rules
+var-%: ; @echo $($*)
+varexport-%: ; @echo $*=$($*)
