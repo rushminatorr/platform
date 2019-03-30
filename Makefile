@@ -24,14 +24,14 @@ var-%: ; @echo $($*)
 varexport-%: ; @echo $*=$($*)
 
 # Target rules
-.PHONY: install-kubectl install-kind install-minikube
+.PHONY: install-kubectl-linux install-kind install-minikube
 .PHONY: deploy-kind deploy-minikube deploy-iofog
 .PHONY: rm-kind rm-minikube rm-iofog
 .PHONY: list help
 .DEFAULT_GOAL := help
 
 # Targets
-install-kubectl: # Install Kubernetes CLI
+install-kubectl-linux: # Install Kubernetes CLI
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
 	chmod +x kubectl 
 	sudo mv kubectl /usr/local/bin/
@@ -44,12 +44,12 @@ install-minikube: # Install Minikube
 	chmod +x minikube
 	sudo mv minikube /usr/local/bin/
 
-deploy-kind: install-kubectl install-kind# Deploy Kubernetes locally with KinD
+deploy-kind: install-kind # Deploy Kubernetes locally with KinD
 	kind create cluster
 	kubectl cluster-info
 	kubectl get pods --all-namespaces -o wide
 
-deploy-minikube: install-kubectl install-minikube # Deploy kubernetes locally with minikube
+deploy-minikube: install-minikube # Deploy kubernetes locally with minikube
 	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
 	sudo minikube update-context
 

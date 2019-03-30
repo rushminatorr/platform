@@ -20,9 +20,9 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 script:
-  - make --version
-  - set -e                  # Fail fast
-  - make deploy-kind        # Deploy Kubernetes locally
-  - make deploy-iofog       # Deploy ioFog services
-  - make test               # Test ioFog services
-  - TAG=rel make push-iofog # Push release packages
+  - set -e                      # Fail fast
+  - make install-kubectl-linux  # Kubernetes CLI
+  - make deploy-kind            # Deploy Kubernetes locally
+  - make deploy-iofog           # Deploy ioFog services
+  - make test                   # Test ioFog services
+  - TAG=rel make push-iofog     # Push release packages
