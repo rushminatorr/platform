@@ -16,12 +16,19 @@ SVCS = agent connector controller kubelet operator scheduler
 .PHONY: install-kubectl
 install-kubectl:
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/$(OS)/amd64/kubectl
-	chmod +x kubectl 
+	chmod +x kubectl
 	sudo mv kubectl /usr/local/bin/
 
 .PHONY: install-kind
 install-kind:
 	go get sigs.k8s.io/kind
+
+.PHONY: install-ansible
+install-ansible:
+	python --version
+	sudo easy_install pip
+	sudo pip install ansible
+	ansible --version
 
 .PHONY: install-minikube
 install-minikube:
@@ -43,13 +50,6 @@ install-gcloud:
 	rm gcloud.tar.gz
 	google-cloud-sdk/install.sh -q
 
-.PHONY: install-ansible
-install-ansible:
-	python --version
-	sudo easy_install pip
-	sudo pip install ansible
-	ansible --version
-
 # Deploy targets
 .PHONY: deploy-gcp
 deploy-gcp:
@@ -57,10 +57,10 @@ deploy-gcp:
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project edgeworx
 	terraform init deploy/gcp
-	terraform apply -auto-approve deploy/gcp 
+	terraform apply -auto-approve deploy/gcp
 	gcloud container clusters get-credentials ci-cluster --zone='australia-southeast1'
 
-.PHONY: deploy-kind 
+.PHONY: deploy-kind
 deploy-kind: install-kind
 	kind create cluster
 	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
@@ -83,7 +83,7 @@ deploy-iofog-%: deploy-%
 .PHONY: rm-gcp
 rm-gcp:
 	printenv GCP_SVC_ACC > creds/svcacc.json
-	terraform destroy -auto-approve deploy/gcp 
+	terraform destroy -auto-approve deploy/gcp
 
 .PHONY: rm-kind
 rm-kind:

@@ -21,9 +21,9 @@ before_install:
 
 script:
   - set -e                        # Fail fast
-  - make install-kubectl-linux    # Kubernetes CLI
-  - make install-terraform-linux  # Terraform CLI
-  - make install-gcloud-linux     # GCP CLI
+  - make install-kubectl          # Kubernetes CLI
+  - make install-terraform        # Terraform CLI
+  - make install-gcloud           # GCP CLI
   - make install-ansible          # Ansible CLI
   - make deploy-iofog-gcp         # Deploy Kubernetes cluster on GKE and deploy ioFog services on cluster
   - make test                     # Test ioFog services
