@@ -43,6 +43,13 @@ install-gcloud:
 	rm gcloud.tar.gz
 	google-cloud-sdk/install.sh -q
 
+.PHONY: install-ansible
+install-ansible:
+	python --version
+	sudo easy_install pip
+	sudo pip install ansible
+	ansible --version
+
 # Deploy targets
 .PHONY: deploy-gcp
 deploy-gcp:
