@@ -16,4 +16,5 @@ spec:
     spec:
       containers:
       - name: iofog-controller
-        image: iofog/controller:dev
+        #image: iofog/controller:dev
+        image: edgeworx/controller-k8s:latest
