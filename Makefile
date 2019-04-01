@@ -1,5 +1,5 @@
 SHELL = /bin/bash
-OS = $(shell uname -s)
+OS = $(shell uname -s | tr A-Z a-z)
 
 # Project variables
 PACKAGE = github.com/iofog/iofog-platform
@@ -13,9 +13,9 @@ MINIKUBE_VERSION ?= 0.35.0
 SVCS = agent connector controller kubelet operator scheduler
 
 # Install targets
-.PHONY: install-kubectl-linux
-install-kubectl-linux:
-	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/linux/amd64/kubectl
+.PHONY: install-kubectl
+install-kubectl:
+	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/$(OS)/amd64/kubectl
 	chmod +x kubectl 
 	sudo mv kubectl /usr/local/bin/
 
@@ -23,29 +23,30 @@ install-kubectl-linux:
 install-kind:
 	go get sigs.k8s.io/kind
 
-.PHONY: install-minikube-linux
-install-minikube-linux:
-	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-linux-amd64
+.PHONY: install-minikube
+install-minikube:
+	curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$(MINIKUBE_VERSION)/minikube-$(OS)-amd64
 	chmod +x minikube
 	sudo mv minikube /usr/local/bin/
 
-.PHONY: install-terraform-linux
-install-terraform-linux:
-	curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip
+.PHONY: install-terraform
+install-terraform:
+	curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_$(OS)_amd64.zip
 	sudo unzip -q terraform.zip -d /opt/terraform
-	sudo ln -s /opt/terraform/terraform /usr/bin/terraform
 	rm -f terraform.zip
+	sudo ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
-.PHONY: install-gcloud-linux
-install-gcloud-linux:
-	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-linux-x86_64.tar.gz
+.PHONY: install-gcloud
+install-gcloud:
+	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-$(OS)-x86_64.tar.gz
 	tar -xf gcloud.tar.gz
+	rm gcloud.tar.gz
 	google-cloud-sdk/install.sh -q
 
 # Deploy targets
 .PHONY: deploy-gcp
 deploy-gcp:
-	@echo '$(GCP_SVC_ACC)' > creds/svcacc.json
+	printenv GCP_SVC_ACC > creds/svcacc.json
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project edgeworx
 	terraform init deploy/gcp
@@ -60,7 +61,7 @@ deploy-kind: install-kind
 
 .PHONY: deploy-minikube
 deploy-minikube: install-minikube
-	sudo minikube start --vm-driver=none --kubernetes-version=v$(K8S_VERSION) --cpus 1 --memory 1024 --disk-size 2000m
+	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
 	sudo minikube update-context
 
 .PHONY: deploy-iofog-%
@@ -74,7 +75,7 @@ deploy-iofog-%: deploy-%
 # Teardown targets
 .PHONY: rm-gcp
 rm-gcp:
-	@echo '$(GCP_SVC_ACC)' > creds/svcacc.json
+	printenv GCP_SVC_ACC > creds/svcacc.json
 	terraform destroy -auto-approve deploy/gcp 
 
 .PHONY: rm-kind
