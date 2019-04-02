@@ -59,16 +59,16 @@ install-gcloud:
 	google-cloud-sdk/install.sh -q
 
 # Deploy targets
-.PHONY: gen-creds-gcp
-gen-creds-gcp:
-	printenv GCP_SVC_ACC > creds/svcacc.json
-	printenv IOF_PUB_KLT > creds/id_klt.pub
-	printenv IOF_PUB_SRG > creds/id_srg.pub
-	printenv IOF_PUB_RSH > creds/id_rsh.pub
-	printenv IOF_PUB_TOD > creds/id_tod.pub
+.PHONY: deploy
+deploy: gen-creds deploy-gcp deploy-agent
+
+.PHONY: gen-creds
+gen-creds:
+	ssh-keygen -t ecdsa -N "" -f creds/id_ecdsa -q
 
 .PHONY: deploy-gcp
-deploy-gcp: gen-creds-gcp
+deploy-gcp: 
+	printenv GCP_SVC_ACC > creds/svcacc.json
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project edgeworx
 	terraform init deploy/gcp
@@ -91,28 +91,28 @@ get-kube-creds:
 	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
 	kubectl cluster-info
 
-.PHONY: deploy-iofog-%
-deploy-iofog-%: deploy-% get-kube-creds
-	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
-	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
-	@for SVC in $(SVCS) ; do \
-		kubectl create -f deploy/$$SVC.yml ; \
-	done
+#.PHONY: deploy-iofog-%
+#deploy-iofog-%: deploy-% get-kube-creds
+#	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
+#	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
+#	@for SVC in $(SVCS) ; do \
+#		kubectl create -f deploy/$$SVC.yml ; \
+#	done
 
 .PHONY: deploy-agent
-deploy-agent: install-ansible install-jq
+deploy-agent:
 	$(eval AGENT_IP=$(shell terraform output ip))
 ifeq ($(OS), darwin)
 	sed -i '' -e '/\[iofog-agent\]/ {' -e 'n; s/.*/$(AGENT_IP)/' -e '}' deploy/ansible/hosts
 else
 	sed -i '/\[iofog-agent\]/!b;n;c$(AGENT_IP)' deploy/ansible/hosts
 endif
-	ANSIBLE_CONFIG=deploy/ansible ansible --version
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
 # Teardown targets
 .PHONY: rm-gcp
-rm-gcp: gen-creds-gcp
+rm-gcp:
+	printenv GCP_SVC_ACC > creds/svcacc.json
 	terraform destroy -auto-approve deploy/gcp 
 
 .PHONY: rm-kind
@@ -142,6 +142,11 @@ push-imgs:
 #	for IMG in $(IOFOG_IMGS) ; do \
 #		docker push $(IMAGE):$(TAG) ; \
 #	done
+
+.PHONY: clean
+clean:
+	rm -f creds/svcacc.json || true
+	rm -f creds/id_*
 
 .PHONY: list help
 .DEFAULT_GOAL := help

@@ -27,6 +27,11 @@
 
     - debug: var=controllerout.stdout
 
+    - name: Wait for cluster to be running
+      shell: while [[ "RUNNING" != $(gcloud container clusters list | awk 'NR==2 {print $8}') ]]; do echo "Waiting for cluster"; done
+      async: 45
+      poll: 1
+
     # TODO: This is a hack! Fix it asap
     - name: Store controller IP
       shell: echo "{{ controllerout.stdout }}" > /tmp/controller-ip

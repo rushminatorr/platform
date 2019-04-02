@@ -21,22 +21,16 @@ before_install:
  
 jobs:
   include:
-    - stage: install
+    - stage: install-deploy-test
       script:
         - make install-kubectl          # Kubernetes CLI
         - make install-terraform        # Terraform CLI
         - make install-gcloud           # GCP CLI
         - make install-ansible          # Ansible CLI
-      after_success:
-        - ./docker_push.sh
-    - stage: deploy
-      script:
-        - make deploy-gcp               # Deploy GKE and GCI for ioFog
-        - make deploy-agent             # Deploy agent on VM
-      after_script:
-        - make rm-gcp
-    - stage: test
-      script:
+        - make install-jq               
+        - make deploy                   # Deploy infrastructure and services
         - make test                     # Test ioFog services
       after_success:
         - TAG=rel make push-imgs        # Push release packages
+      after_script:
+        - make rm-gcp                   # Teardown GCP clusters

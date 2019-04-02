@@ -17,7 +17,7 @@ resource "google_compute_instance" "vm_instance" {
   }
 
   metadata {
-   sshKeys = "drluckyspin:${file("creds/id_tod.pub")}\nkiltonhopkins:${file("creds/id_klt.pub")}\nserge:${file("creds/id_srg.pub")}\nrashmi:${file("creds/id_rsh.pub")}"
+   sshKeys = "iofog:${file("creds/id_ecdsa.pub")}"
  }
  // A variable for extracting the external ip of the instance
 }
