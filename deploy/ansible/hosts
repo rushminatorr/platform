@@ -1,3 +1,9 @@
 # Connection details
+[all:vars]
+ansible_connection=ssh
+ansible_user=kiltonhopkins
+ansible_ssh_private_key_file=~/.ssh/id_rsa_kh
 
+# Need to add the Agent host/ip in here dynamically
+[iofog-agent]
 

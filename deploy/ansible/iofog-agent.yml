@@ -2,15 +2,59 @@
 # Ansible Playbook to setup and configure iofog Agent
 #
 ---
+
+#
+# All of the tasks needed for the iofog Agent host
+#
+- hosts: localhost
+  tasks:
+    - name: Get gcloud clusters
+      shell: gcloud container clusters list | awk 'NR==2 {print $1}'
+      register: clusterlist
+
+    - debug: var=clusterlist.stdout
+
+    - name: Get credentials for k8s
+      shell: gcloud container clusters get-credentials {{ clusterlist.stdout }} --zone us-central1-a
+      register: credsoutput
+
+    - debug: var=credsoutput
+
+      # Get controller ip
+    - name: Get iofog-controller ip address
+      shell: kubectl get services --output=json | jq -j '.items[] | select(.metadata.name == "iofog-controller").status.loadBalancer.ingress[0].ip'
+      register: controllerout
+
+    - debug: var=controllerout.stdout
+
+    # TODO: This is a hack! Fix it asap
+    - name: Store controller IP
+      shell: echo "{{ controllerout.stdout }}" > /tmp/controller-ip
+
+
+#
+# All of the tasks needed for the iofog Agent host
+#
 - hosts: iofog-agent
   become: true
+  gather_facts: true
   tasks:
     - name: Begin!
       command: echo "Beginning install of iofogAgent software"
       register: echo
 
-    - debug: var=echo
 
+    - name: Copy controller-ip to agent host
+      copy:
+        src: /tmp/controller-ip
+        dest: controller-ip
+        mode: 755
+
+    - name: Get the controller IP address
+      shell: cat controller-ip
+      register: controllerIP
+
+    - debug: var=controllerIP.stdout
 
     - name: Hack workaround for installing non authenticated packages
       copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
@@ -22,6 +66,7 @@
         - ca-certificates
         - curl
         - software-properties-common
+        - jq
       register: aptoutput
 
     - debug: var=aptoutput
@@ -44,6 +89,37 @@
     # Start iofog agent
     - name: Start iofog Agent
       shell: sudo service iofog-agent start
+
+    # Agent takes a few secs to start completely
+    - name: Wait for Agent to complete starting
+      wait_for: timeout=2
+
+    - name: Configure Agent frequency
+      shell: iofog-agent config -cf 10
+      register: freq
+
+    - debug: var=freq.stdout
+
+    - name: Change Controller URL
+      shell: iofog-agent config -a http://"{{ controllerIP.stdout }}":51121/api/v3/
+      register: url
+
+    - debug: var=url
+
+    - name: Copy setup script to Agent
+      copy:
+        src: scripts/setup-agent.sh
+        dest: setup-agent.sh
+        mode: 755
+      register: copy_script
+
+    - debug: var=copy_script
+
+    - name: Run the Agent setup
+      shell: ./setup-agent.sh http://"{{ controllerIP.stdout }}":51121/api/v3
+      register: setup
+
+    - debug: var=setup
 
     - name: Remove hack that allows unauthenticated packages to install
       file: path=/etc/apt/apt.conf.d/99temp state=absent

@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,3 +19,19 @@ spec:
       - name: iofog-controller
         #image: iofog/controller:dev
         image: edgeworx/controller-k8s:latest
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: iofog-controller
+  name: iofog-controller
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 51121
+      targetPort: 51121
+      protocol: TCP
+  selector:
+    app: iofog-controller
