@@ -1,8 +1,7 @@
 resource "google_compute_instance" "vm_instance" {
-  name         = "terraform-instance2"
+  name         = "iofog-gci-${random_id.instance_id.hex}"
   machine_type = "f1-micro"
   zone = "us-central1-a"
-  #location     = "australia-southeast1"
 
   boot_disk {
     initialize_params {
