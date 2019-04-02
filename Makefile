@@ -28,7 +28,7 @@ install-ansible:
 	python --version
 	sudo easy_install pip
 	sudo pip install ansible
-	ansible --version
+	ANSIBLE_CONFIG=./deploy/ansible ansible --version
 
 .PHONY: install-minikube
 install-minikube:
@@ -78,6 +78,17 @@ deploy-iofog-%: deploy-%
 	@for SVC in $(SVCS) ; do \
 		kubectl create -f deploy/$$SVC.yml ; \
 	done
+
+.PHONY: append-agent-host
+append-agent-host:
+	terraform output ip > ./deploy/ansible/hosts
+	#echo "127.0.0.1" >> ./deploy/ansible/hosts
+
+.PHONY: deploy-agent
+deploy-agent: install-ansible append-agent-host
+	ANSIBLE_CONFIG=./deploy/ansible ansible --version
+	ANSIBLE_CONFIG=./deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
+
 
 # Teardown targets
 .PHONY: rm-gcp

@@ -1,0 +1,19 @@
+---
+- hosts: iofog-agent
+  tasks:
+    - name: Begin!
+      command: echo Beginning install of iofogAgent software
+
+#    - name: Install prerequisites
+#      apt: name={{item}} update_cache=yes
+#      with_items:
+#        - apt-transport-https
+#        - ca-certificates
+#        - curl
+#        - software-properties-common
+#
+#    - name: Install ioFog Agent
+#      command: curl -sSf https://iofog.org/linux.sh | sh
+
+    - name: Testing!
+      command: ping www.google.com
