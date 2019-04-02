@@ -48,7 +48,7 @@ install-gcloud:
 	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-$(OS)-x86_64.tar.gz
 	tar -xf gcloud.tar.gz
 	rm gcloud.tar.gz
-	google-cloud-sdk/install.sh -q
+	google-cloud-sdk/install.sh
 
 # Deploy targets
 .PHONY: gen-creds-gcp
@@ -72,10 +72,10 @@ deploy-kind: install-kind
 	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
 	kubectl cluster-info
 
-.PHONY: deploy-minikube
-deploy-minikube: install-minikube
-	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
-	sudo minikube update-context
+#.PHONY: deploy-minikube
+#deploy-minikube: install-minikube
+#	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
+#	sudo minikube update-context
 
 .PHONY: deploy-iofog-%
 deploy-iofog-%: deploy-%
@@ -87,7 +87,7 @@ deploy-iofog-%: deploy-%
 
 .PHONY: append-agent-host
 append-agent-host:
-	terraform output ip > ./deploy/ansible/hosts
+	terraform output ip >> ./deploy/ansible/hosts
 	#echo "127.0.0.1" >> ./deploy/ansible/hosts
 
 .PHONY: deploy-agent

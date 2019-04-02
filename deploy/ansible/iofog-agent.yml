@@ -1,22 +1,54 @@
+#
+# Ansible Playbook to setup and configure iofog Agent
+#
 ---
 - hosts: iofog-agent
+  become: true
   tasks:
     - name: Begin!
-      command: echo Beginning install of iofogAgent software
+      command: echo "Beginning install of iofogAgent software"
+      register: echo
 
-    - name: Testing!
-      command: ping www.google.com
+    - debug: var=echo
+
+
+    - name: Hack workaround for installing non authenticated packages
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
 
     - name: Install prerequisites
-      apt: name={{item}} update_cache=yes
+      apt: name={{item}} update_cache=no
       with_items:
         - apt-transport-https
         - ca-certificates
         - curl
         - software-properties-common
+      register: aptoutput
 
-    - name: Install ioFog Agent
-      command: curl -sSf https://iofog.org/linux.sh | sh
+    - debug: var=aptoutput
+
+
+    # Install iofog Agent
+    - name: Download install script
+      get_url: url=https://iofog.org/linux.sh dest=/opt/linux.sh mode=755
+
+    - name: Hack workaround for installing non authenticated packages
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+
+    - name: Execute install script
+      shell: /opt/linux.sh
+      register: install
+
+    - debug: var=install
+
+
+    # Start iofog agent
+    - name: Start iofog Agent
+      shell: sudo service iofog-agent start
+
+    - name: Remove hack that allows unauthenticated packages to install
+      file: path=/etc/apt/apt.conf.d/99temp state=absent
+
+
 
 
 
