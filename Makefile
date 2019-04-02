@@ -51,14 +51,20 @@ install-gcloud:
 	google-cloud-sdk/install.sh -q
 
 # Deploy targets
-.PHONY: deploy-gcp
-deploy-gcp:
+.PHONY: gen-creds-gcp
+gen-creds-gcp:
 	printenv GCP_SVC_ACC > creds/svcacc.json
+	printenv IOF_PUB_KLT > creds/id_klt.pub
+	printenv IOF_PUB_SRG > creds/id_srg.pub
+	printenv IOF_PUB_RSH > creds/id_rsh.pub
+	printenv IOF_PUB_TOD > creds/id_tod.pub
+
+.PHONY: deploy-gcp
+deploy-gcp: gen-creds-gcp
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project edgeworx
 	terraform init deploy/gcp
 	terraform apply -auto-approve deploy/gcp
-	gcloud container clusters get-credentials ci-cluster --zone='australia-southeast1'
 
 .PHONY: deploy-kind
 deploy-kind: install-kind
@@ -92,9 +98,8 @@ deploy-agent: install-ansible append-agent-host
 
 # Teardown targets
 .PHONY: rm-gcp
-rm-gcp:
-	printenv GCP_SVC_ACC > creds/svcacc.json
-	terraform destroy -auto-approve deploy/gcp
+rm-gcp: gen-creds-gcp
+	terraform destroy -auto-approve deploy/gcp 
 
 .PHONY: rm-kind
 rm-kind:
