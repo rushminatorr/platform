@@ -84,7 +84,7 @@ get-kube-creds:
 	kubectl cluster-info
 
 .PHONY: deploy-iofog-%
-deploy-iofog-%: get-kube-creds deploy-%
+deploy-iofog-%: deploy-% get-kube-creds
 	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
 	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
 	@for SVC in $(SVCS) ; do \
