@@ -23,6 +23,14 @@ install-kubectl:
 install-kind:
 	go get sigs.k8s.io/kind
 
+.PHONY: install-jq
+install-jq:
+ifeq ($(OS), darwin)
+	brew install jq
+else
+	sudo apt install jq
+endif
+
 .PHONY: install-ansible
 install-ansible:
 	python --version
@@ -72,10 +80,10 @@ deploy-kind: install-kind
 	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
 	kubectl cluster-info
 
-#.PHONY: deploy-minikube
-#deploy-minikube: install-minikube
-#	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
-#	sudo minikube update-context
+.PHONY: deploy-minikube
+deploy-minikube: install-minikube
+	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
+	sudo minikube update-context
 
 .PHONY: get-kube-creds
 get-kube-creds:
@@ -91,16 +99,16 @@ deploy-iofog-%: deploy-% get-kube-creds
 		kubectl create -f deploy/$$SVC.yml ; \
 	done
 
-.PHONY: append-agent-host
-append-agent-host:
-	terraform output ip >> ./deploy/ansible/hosts
-	#echo "127.0.0.1" >> ./deploy/ansible/hosts
-
 .PHONY: deploy-agent
-deploy-agent: install-ansible append-agent-host
-	ANSIBLE_CONFIG=./deploy/ansible ansible --version
-	ANSIBLE_CONFIG=./deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
-
+deploy-agent: install-ansible install-jq
+	$(eval AGENT_IP=$(shell terraform output ip))
+ifeq ($(OS), darwin)
+	sed -i '' -e '/\[iofog-agent\]/ {' -e 'n; s/.*/$(AGENT_IP)/' -e '}' deploy/ansible/hosts
+else
+	sed -i '/\[iofog-agent\]/!b;n;c$(AGENT_IP)' deploy/ansible/hosts
+endif
+	ANSIBLE_CONFIG=deploy/ansible ansible --version
+	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
 # Teardown targets
 .PHONY: rm-gcp

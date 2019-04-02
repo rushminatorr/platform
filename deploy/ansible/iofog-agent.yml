@@ -43,7 +43,6 @@
       command: echo "Beginning install of iofogAgent software"
       register: echo
 
-
     - name: Copy controller-ip to agent host
       copy:
         src: /tmp/controller-ip
@@ -123,10 +122,3 @@
 
     - name: Remove hack that allows unauthenticated packages to install
       file: path=/etc/apt/apt.conf.d/99temp state=absent
-
-
-
-
-
-
-

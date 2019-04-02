@@ -25,7 +25,12 @@ script:
   - make install-terraform        # Terraform CLI
   - make install-gcloud           # GCP CLI
   - make install-ansible          # Ansible CLI
-  - make deploy-iofog-gcp         # Deploy Kubernetes cluster on GKE and deploy ioFog services on cluster
+  - make deploy-gcp               # Deploy GKE and GCI for ioFog
+  - make deploy-agent             # Deploy agent on VM
+#  - make deploy-iofog-gcp         # Deploy Kubernetes cluster on GKE and deploy ioFog services on cluster
   - make test                     # Test ioFog services
   - make rm-gcp                   # Teardown cluster
   - TAG=rel make push-imgs        # Push release packages
+
+after_failure:
+  - make rm-gcp                   # Teardown cluster
