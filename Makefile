@@ -79,7 +79,7 @@ deploy-kind: install-kind
 
 .PHONY: get-kube-creds
 get-kube-creds:
-	export CLUSTER_NAME=$(gcloud container clusters list | awk 'NR==2 {print $1}')
+	$(eval export CLUSTER_NAME=$(shell gcloud container clusters list | awk 'NR==2 {print $$1}'))
 	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
 	kubectl cluster-info
 
