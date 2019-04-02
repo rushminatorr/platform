@@ -77,8 +77,14 @@ deploy-kind: install-kind
 #	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
 #	sudo minikube update-context
 
+.PHONY: get-kube-creds
+get-kube-creds:
+	export CLUSTER_NAME=$(gcloud container clusters list | awk 'NR==2 {print $1}')
+	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
+	kubectl cluster-info
+
 .PHONY: deploy-iofog-%
-deploy-iofog-%: deploy-%
+deploy-iofog-%: get-kube-creds deploy-%
 	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
 	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
 	@for SVC in $(SVCS) ; do \
