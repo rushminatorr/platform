@@ -48,7 +48,7 @@ install-gcloud:
 	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-$(OS)-x86_64.tar.gz
 	tar -xf gcloud.tar.gz
 	rm gcloud.tar.gz
-	google-cloud-sdk/install.sh
+	google-cloud-sdk/install.sh -q
 
 # Deploy targets
 .PHONY: gen-creds-gcp
