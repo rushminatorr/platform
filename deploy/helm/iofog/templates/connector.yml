@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connector-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: connector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connector
+  template:
+    metadata:
+      labels:
+        app: connector
+    spec:
+      containers:
+      - name: connector
+        image: {{ .Values.connector.image.repository }}:{{ .Values.connector.image.tag }}

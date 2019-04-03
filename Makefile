@@ -10,11 +10,19 @@ COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_DATE ?= $(shell date +%FT%T%z)
 K8S_VERSION ?= 1.13.4
 MINIKUBE_VERSION ?= 0.35.0
-SVCS = agent connector controller kubelet operator scheduler
 
 # Install targets
 .PHONY: install
-install: install-kubectl install-jq install-ansible install-terraform install-gcloud
+install: install-helm install-kubectl install-jq install-ansible install-terraform install-gcloud
+
+.PHONY: install-helm
+install-helm:
+	curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-v2.13.1-$(OS)-amd64.tar.gz
+	tar -xf helm.tar.gz
+	rm helm.tar.gz
+	sudo mv $(OS)-amd64/helm /usr/local/bin
+	chmod +x /usr/local/bin/helm
+	rm -r $(OS)-amd64
 
 .PHONY: install-kubectl
 install-kubectl:
@@ -63,7 +71,7 @@ install-gcloud:
 
 # Deploy targets
 .PHONY: deploy
-deploy: gen-creds deploy-gcp deploy-agent
+deploy: gen-creds deploy-gcp deploy-k8s-svcs deploy-agent
 
 .PHONY: gen-creds
 gen-creds:
@@ -88,19 +96,25 @@ deploy-minikube: install-minikube
 	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
 	sudo minikube update-context
 
-.PHONY: get-kube-creds
-get-kube-creds:
+.PHONY: get-k8s-creds
+get-k8s-creds:
 	$(eval export CLUSTER_NAME=$(shell gcloud container clusters list | awk 'NR==2 {print $$1}'))
 	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
 	kubectl cluster-info
 
-#.PHONY: deploy-iofog-%
-#deploy-iofog-%: deploy-% get-kube-creds
-#	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
-#	sed 's/<<PORT>>/"$(PORT)"/g' deploy/operator.yml.tmpl > deploy/operator.yml
-#	@for SVC in $(SVCS) ; do \
-#		kubectl create -f deploy/$$SVC.yml ; \
-#	done
+.PHONY: init-helm
+init-helm:
+	helm init --wait
+	kubectl create serviceaccount --namespace kube-system tiller
+	kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+	kubectl rollout status --watch deployment/tiller-deploy -n kube-system
+
+.PHONY: deploy-k8s-svcs
+deploy-k8s-svcs: get-k8s-creds init-helm
+	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
+	kubectl create namespace iofog
+	helm install deploy/helm/iofog
 
 .PHONY: deploy-agent
 deploy-agent:

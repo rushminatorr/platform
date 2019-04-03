@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller
+  template:
+    metadata:
+      labels:
+        app: controller
+    spec:
+      containers:
+      - name: controller
+        image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: controller
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: controller
+spec:
+  type: LoadBalancer
+  ports:
+    - port: {{ .Values.controller.port }}
+      targetPort: {{ .Values.controller.port }}
+      protocol: TCP
+  selector:
+    app: controller

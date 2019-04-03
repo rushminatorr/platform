@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-deployment
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: operator
+  template:
+    metadata:
+      labels:
+        app: operator
+    spec:
+      containers:
+      - name: operator
+        image: {{ .Values.operator.image.repository }}:{{ .Values.operator.image.tag }}
+        env:
+        - name: WATCH_NAMESPACE
+          value: {{ .Values.namespace }}
+        - name: KUBERNETES_SERVICE_HOST
+          value:
+        - name: KUBERNETES_SERVICE_PORT
+          value:
