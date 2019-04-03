@@ -96,8 +96,9 @@ deploy-minikube: install-minikube
 	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
 	sudo minikube update-context
 
-.PHONY: get-k8s-creds
-get-k8s-creds:
+.PHONY: init-gke
+init-gke:
+	script/wait-for-gke.bash
 	$(eval export CLUSTER_NAME=$(shell gcloud container clusters list | awk 'NR==2 {print $$1}'))
 	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
 	kubectl cluster-info
@@ -111,7 +112,7 @@ init-helm:
 	kubectl rollout status --watch deployment/tiller-deploy -n kube-system
 
 .PHONY: deploy-k8s-svcs
-deploy-k8s-svcs: get-k8s-creds init-helm
+deploy-k8s-svcs: init-gke init-helm
 	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
 	kubectl create namespace iofog
 	helm install deploy/helm/iofog
