@@ -23,14 +23,10 @@ jobs:
   include:
     - stage: install-deploy-test
       script:
-        - make install-kubectl          # Kubernetes CLI
-        - make install-terraform        # Terraform CLI
-        - make install-gcloud           # GCP CLI
-        - make install-ansible          # Ansible CLI
-        - make install-jq               
-        - make deploy                   # Deploy infrastructure and services
-        - make test                     # Test ioFog services
+        - make install             # Install deps
+        - make deploy              # Deploy infrastructure and services
+        - make test                # Test ioFog services
       after_success:
-        - TAG=rel make push-imgs        # Push release packages
+        - TAG=rel make push-imgs   # Push release packages
       after_script:
-        - make rm-gcp                   # Teardown GCP clusters
+        - make rm-gcp              # Teardown GCP clusters

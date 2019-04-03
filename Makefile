@@ -13,6 +13,9 @@ MINIKUBE_VERSION ?= 0.35.0
 SVCS = agent connector controller kubelet operator scheduler
 
 # Install targets
+.PHONY: install
+install: install-kubectl install-jq install-ansible install-terraform install-gcloud
+
 .PHONY: install-kubectl
 install-kubectl:
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/$(OS)/amd64/kubectl
