@@ -1,0 +1,28 @@
+namespace: iofog
+
+controller:
+  token: ""
+  host: controller
+  port: 51121
+
+scheduler:
+  replicas: 1
+  image:
+    repository: iofog/iofog-scheduler
+    tag: dev
+    pullPolicy: Always
+
+operator:
+  replicas: 1
+  image:
+    repository: iofog/iofog-operator
+    tag: dev
+    pullPolicy: Always
+  port: 60000
+
+kubelet:
+  replicas: 1
+  image:
+    repository: iofog/iofog-kubelet
+    tag: dev
+    pullPolicy: Always

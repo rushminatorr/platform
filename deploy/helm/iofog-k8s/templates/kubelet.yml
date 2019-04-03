@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubelet
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: kubelet
+spec:
+  replicas: {{ .Values.kubelet.replicas }}
+  selector:
+    matchLabels:
+      name: kubelet
+  template:
+    metadata:
+      labels:
+        name: kubelet
+    spec:
+      containers:
+      - name: kubelet
+        image: {{ .Values.kubelet.image.repository }}:{{ .Values.kubelet.image.tag }}
+        imagePullPolicy: {{ .Values.kubelet.image.pullPolicy }}
+        env:
+        - name: KUBERNETES_SERVICE_HOST
+          value: {{ .Values.apiServerHost }}
+        - name: KUBERNETES_SERVICE_PORT
+          value: {{ .Values.apiServerPort }}
+        args: 
+        - "--namespace"
+        - {{ .Values.namespace }}
+        - "--iofog-token"
+        - {{ .Values.controller.token }}
+        - "--iofog-url"
+        - {{ .Values.controller.host }}:{{ .Values.controller.port }}

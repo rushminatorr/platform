@@ -71,7 +71,7 @@ install-gcloud:
 
 # Deploy targets
 .PHONY: deploy
-deploy: gen-creds deploy-gcp deploy-k8s-svcs deploy-agent
+deploy: gen-creds deploy-gcp deploy-iofog-k8s deploy-agent
 
 .PHONY: gen-creds
 gen-creds:
@@ -110,11 +110,18 @@ init-helm:
 	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 	kubectl rollout status --watch deployment/tiller-deploy -n kube-system
 
-.PHONY: deploy-k8s-svcs
-deploy-k8s-svcs: init-gke init-helm
-	$(eval PORT=$(shell kubectl cluster-info | head -n 1 | cut -d ":" -f 3 | sed 's/[^0-9]*//g' | rev | cut -c 2- | rev))
+.PHONY: deploy-iofog
+deploy-iofog:
 	kubectl create namespace iofog
 	helm install deploy/helm/iofog
+	@echo "Waiting for Controller LoadBalancer IP..."
+
+.PHONY: deploy-iofog-k8s
+deploy-iofog-k8s: init-gke init-helm deploy-iofog 
+	$(eval IP=$(shell script/wait-for-lb.bash iofog controller))
+	$(eval PORT=51121)
+	$(eval TOKEN=$(shell script/get-controller-token.bash $(IP) $(PORT)))
+	helm install deploy/helm/iofog-k8s --set-string controller.token=$(TOKEN),controller.host=http://$(IP),controller.port=$(PORT)
 
 .PHONY: deploy-agent
 deploy-agent:
@@ -127,6 +134,11 @@ endif
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
 # Teardown targets
+.PHONY: rm-iofog
+rm-iofog:
+	helm delete --purge $(shell helm ls | awk '$$9 ~ /iofog/ { print $$1 }')
+	kubectl delete ns iofog
+
 .PHONY: rm-gcp
 rm-gcp:
 	printenv GCP_SVC_ACC > creds/svcacc.json
@@ -140,12 +152,6 @@ rm-kind:
 rm-minikube:
 	sudo minikube stop
 	sudo minikube delete
-
-.PHONY: rm-iofog
-rm-iofog:
-	@for SVC in $(SVCS) ; do \
-		kubectl delete -f deploy/$$SVC.yml ; \
-	done
 
 # Util targets
 .PHONY: test

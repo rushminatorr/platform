@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-deployment
+  name: controller
   namespace: {{ .Values.namespace }}
   labels:
     app: controller
 spec:
-  replicas: 1
+  replicas: {{ .Values.controller.replicas }}
   selector:
     matchLabels:
-      app: controller
+      name: controller
   template:
     metadata:
       labels:
-        app: controller
+        name: controller
     spec:
       containers:
       - name: controller

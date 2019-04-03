@@ -8,21 +8,15 @@
 #
 - hosts: localhost
   tasks:
-    - name: Get gcloud clusters
-      shell: gcloud container clusters list | awk 'NR==2 {print $1}'
-      register: clusterlist
-
-    - debug: var=clusterlist.stdout
-
     - name: Get credentials for k8s
-      shell: gcloud container clusters get-credentials {{ clusterlist.stdout }} --zone us-central1-a
+      shell: gcloud container clusters get-credentials $(terraform output -state=../../terraform.tfstate name) --zone $(terraform output -state=../../terraform.tfstate zone)
       register: credsoutput
 
     - debug: var=credsoutput
 
       # Get controller ip
     - name: Get iofog-controller ip address
-      shell: kubectl get services --output=json | jq -j '.items[] | select(.metadata.name == "iofog-controller").status.loadBalancer.ingress[0].ip'
+      shell: kubectl get services --output=json -n iofog | jq -j '.items[] | select(.metadata.name == "controller").status.loadBalancer.ingress[0].ip'
       register: controllerout
 
     - debug: var=controllerout.stdout

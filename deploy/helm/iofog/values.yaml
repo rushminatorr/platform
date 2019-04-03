@@ -1,7 +1,7 @@
 namespace: iofog
 
 controller:
-  replicaCount: 1
+  replicas: 1
   image: 
     repository: edgeworx/controller-k8s
     tag: latest
@@ -9,29 +9,8 @@ controller:
   port: 51121
 
 connector:
-  replicaCount: 1
+  replicas: 1
   image: 
     repository: iofog/connector
-    tag: dev
-    pullPolicy: IfNotPresent
-
-scheduler:
-  replicaCount: 1
-  image:
-    repository: iofog/iofog-scheduler
-    tag: dev
-    pullPolicy: IfNotPresent
-
-operator:
-  replicaCount: 1
-  image:
-    repository: iofog/iofog-operator
-    tag: dev
-    pullPolicy: IfNotPresent
-
-kubelet:
-  replicaCount: 1
-  image:
-    repository: iofog/iofog-kubelet
     tag: dev
     pullPolicy: IfNotPresent
