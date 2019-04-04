@@ -21,9 +21,9 @@ spec:
         imagePullPolicy: {{ .Values.kubelet.image.pullPolicy }}
         env:
         - name: KUBERNETES_SERVICE_HOST
-          value: {{ .Values.apiServerHost }}
+          value: {{ .Values.kubelet.apiServerHost }}
         - name: KUBERNETES_SERVICE_PORT
-          value: {{ .Values.apiServerPort }}
+          value: {{ .Values.kubelet.apiServerPort | quote }}
         args: 
         - "--namespace"
         - {{ .Values.namespace }}

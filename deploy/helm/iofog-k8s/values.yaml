@@ -26,3 +26,5 @@ kubelet:
     repository: iofog/iofog-kubelet
     tag: dev
     pullPolicy: Always
+  apiServerHost: kubernetes.default.svc
+  apiServerPort: 80
