@@ -4,7 +4,7 @@ metadata:
   name: connector
   namespace: {{ .Values.namespace }}
   labels:
-    app: connector
+    name: connector
 spec:
   replicas: {{ .Values.connector.replicas }}
   selector:

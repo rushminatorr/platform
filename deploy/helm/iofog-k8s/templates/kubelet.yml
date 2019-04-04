@@ -4,7 +4,7 @@ metadata:
   name: kubelet
   namespace: {{ .Values.namespace }}
   labels:
-    app: kubelet
+    name: kubelet
 spec:
   replicas: {{ .Values.kubelet.replicas }}
   selector:

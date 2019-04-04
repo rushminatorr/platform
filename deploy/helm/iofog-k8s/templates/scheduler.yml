@@ -4,7 +4,7 @@ metadata:
   name: scheduler
   namespace: {{ .Values.namespace }}
   labels:
-    app: scheduler
+    name: scheduler
 spec:
   replicas: {{ .Values.scheduler.replicas }}
   selector:

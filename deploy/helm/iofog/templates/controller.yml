@@ -4,7 +4,7 @@ metadata:
   name: controller
   namespace: {{ .Values.namespace }}
   labels:
-    app: controller
+    name: controller
 spec:
   replicas: {{ .Values.controller.replicas }}
   selector:
@@ -25,7 +25,7 @@ metadata:
   name: controller
   namespace: {{ .Values.namespace }}
   labels:
-    app: controller
+    name: controller
 spec:
   type: LoadBalancer
   ports:
@@ -33,4 +33,4 @@ spec:
       targetPort: {{ .Values.controller.port }}
       protocol: TCP
   selector:
-    app: controller
+    name: controller
