@@ -99,8 +99,7 @@ deploy-minikube: install-minikube
 .PHONY: init-gke
 init-gke:
 	script/wait-for-gke.bash
-	$(eval export CLUSTER_NAME=$(shell gcloud container clusters list | awk 'NR==2 {print $$1}'))
-	gcloud container clusters get-credentials $(CLUSTER_NAME) --zone us-central1-a
+	gcloud container clusters get-credentials $(shell terraform output name) --zone $(shell terraform output zone)
 	kubectl cluster-info
 
 .PHONY: init-helm
