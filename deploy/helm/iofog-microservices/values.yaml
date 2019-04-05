@@ -1,0 +1,2 @@
+namespace: iofog
+replicas: 1

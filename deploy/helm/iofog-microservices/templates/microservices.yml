@@ -1,0 +1,21 @@
+apiVersion: k8s.iofog.org/v1alpha1
+kind: IOFog
+metadata:
+  name: weather-demo
+  namespace: {{ .Values.namespace }}
+spec:
+  microservices:
+    - name: "weather"
+      catalog-item-id: 6
+      config: "{\"citycode\":\"5391997\",\"apikey\":\"6141811a6136148a00133488eadff0fb\",\"frequency\":1000}"
+      host-access: false
+      routes:
+        - "@1"
+    - name: "json-rest-api"
+      catalog-item-id: 7
+      config: "{\"buffersize\":3,\"contentdataencoding\":\"utf8\",\"contextdataencoding\":\"utf8\",\"outputfields\":{\"publisher\":\"source\",\"contentdata\":\"temperature\",\"timestamp\":\"time\"}}"
+      host-access: false
+      ports:
+        - internal: 80
+          external: 5555
+  replicas: {{ .Values.replicas }}
