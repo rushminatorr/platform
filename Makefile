@@ -71,7 +71,7 @@ install-gcloud:
 
 # Deploy targets
 .PHONY: deploy
-deploy: gen-creds deploy-gcp deploy-iofog-k8s deploy-agent
+deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent
 
 .PHONY: gen-creds
 gen-creds:
@@ -101,23 +101,23 @@ init-gke:
 	script/wait-for-gke.bash
 	gcloud container clusters get-credentials $(shell terraform output name) --zone $(shell terraform output zone)
 	kubectl cluster-info
-
-.PHONY: init-helm
-init-helm:
 	helm init --wait
 	kubectl create serviceaccount --namespace kube-system tiller
 	kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 	kubectl rollout status --watch deployment/tiller-deploy -n kube-system
 
-.PHONY: deploy-iofog
-deploy-iofog:
+.PHONY: deploy-iofog-k8s
+deploy-iofog-k8s: deploy-k8s-core deploy-k8s-exts
+
+.PHONY: deploy-k8s-core
+deploy-k8s-core:
 	kubectl create namespace iofog
 	helm install deploy/helm/iofog
 	@echo "Waiting for Controller LoadBalancer IP..."
 
-.PHONY: deploy-iofog-k8s
-deploy-iofog-k8s: init-gke init-helm deploy-iofog 
+.PHONY: deploy-k8s-exts
+deploy-k8s-exts:
 	$(eval IP=$(shell script/wait-for-lb.bash iofog controller))
 	$(eval PORT=51121)
 	$(eval TOKEN=$(shell script/get-controller-token.bash $(IP) $(PORT)))
@@ -134,8 +134,8 @@ endif
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
 # Teardown targets
-.PHONY: rm-iofog
-rm-iofog:
+.PHONY: rm-iofog-k8s
+rm-iofog-k8s:
 	helm delete --purge $(shell helm ls | awk '$$9 ~ /iofog/ { print $$1 }')
 	kubectl delete ns iofog
 
