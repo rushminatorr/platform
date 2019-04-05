@@ -71,7 +71,7 @@ install-gcloud:
 
 # Deploy targets
 .PHONY: deploy
-deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent deploy-k8s-microservices
+deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent
 
 .PHONY: gen-creds
 gen-creds:
@@ -133,13 +133,12 @@ else
 endif
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
-.PHONY: deploy-k8s-microservices
-deploy-k8s-microservices:
-	helm install deploy/helm/iofog-microservices
-
 # Tests
 .PHONY: test
-test: deploy-k8s-microservices
+test:
+	helm install deploy/helm/iofog-microservices
+	kubectl wait --for=condition=Ready --timeout=400s pod -l app=weather-demo -n iofog
+	curl http://$(shell terraform output ip):$(shell terraform output port)
 
 # Teardown targets
 .PHONY: rm-iofog-k8s
@@ -160,11 +159,6 @@ rm-kind:
 rm-minikube:
 	sudo minikube stop
 	sudo minikube delete
-
-# Util targets
-.PHONY: test
-test:
-	@echo 'TODO: Write system tests :)'
 
 .PHONY: push-imgs
 push-imgs:

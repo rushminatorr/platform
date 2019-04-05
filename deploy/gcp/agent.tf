@@ -1,5 +1,5 @@
-resource "google_compute_instance" "vm_instance" {
-  name = "${var.user}-${random_id.instance_id.hex}"
+resource "google_compute_instance" "agent" {
+  name = "${var.user}-agent-${random_id.instance_id.hex}"
   machine_type = "f1-micro"
   zone = "us-central1-a"
 
@@ -22,5 +22,9 @@ resource "google_compute_instance" "vm_instance" {
  // A variable for extracting the external ip of the instance
 }
 output "ip" {
- value = "${google_compute_instance.vm_instance.network_interface.0.access_config.0.nat_ip}"
+ value = "${google_compute_instance.agent.network_interface.0.access_config.0.nat_ip}"
+}
+
+output "port" {
+ value = "${var.agent_port}"
 }
