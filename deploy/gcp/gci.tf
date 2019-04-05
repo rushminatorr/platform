@@ -1,5 +1,5 @@
 resource "google_compute_instance" "vm_instance" {
-  name         = "iofog-gci-${random_id.instance_id.hex}"
+  name = "${var.user}-${random_id.instance_id.hex}"
   machine_type = "f1-micro"
   zone = "us-central1-a"
 

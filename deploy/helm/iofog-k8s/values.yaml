@@ -27,4 +27,4 @@ kubelet:
     tag: dev
     pullPolicy: Always
   apiServerHost: kubernetes.default.svc
-  apiServerPort: 80
+  apiServerPort: 443

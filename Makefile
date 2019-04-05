@@ -83,7 +83,7 @@ deploy-gcp:
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project edgeworx
 	terraform init deploy/gcp
-	terraform apply -auto-approve deploy/gcp
+	terraform apply -var user=$(USER) -auto-approve deploy/gcp
 
 .PHONY: deploy-kind
 deploy-kind: install-kind
@@ -142,7 +142,7 @@ rm-iofog-k8s:
 .PHONY: rm-gcp
 rm-gcp:
 	printenv GCP_SVC_ACC > creds/svcacc.json
-	terraform destroy -auto-approve deploy/gcp 
+	terraform destroy -var user=$(USER) -auto-approve deploy/gcp
 
 .PHONY: rm-kind
 rm-kind:

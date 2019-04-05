@@ -1,7 +1,7 @@
 resource "google_container_cluster" "gke" {
-  name               = "iofog-gke-${random_id.instance_id.hex}"
-  network            = "default"
-  location           = "australia-southeast1"
+  name = "${var.user}-${random_id.instance_id.hex}"
+  network = "default"
+  location = "australia-southeast1"
   initial_node_count = 1
 }
 
