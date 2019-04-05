@@ -71,7 +71,7 @@ install-gcloud:
 
 # Deploy targets
 .PHONY: deploy
-deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent
+deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent deploy-k8s-microservices
 
 .PHONY: gen-creds
 gen-creds:
@@ -132,6 +132,14 @@ else
 	sed -i '/\[iofog-agent\]/!b;n;c$(AGENT_IP)' deploy/ansible/hosts
 endif
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
+
+.PHONY: deploy-k8s-microservices
+deploy-k8s-microservices:
+	helm install deploy/helm/iofog-microservices
+
+# Tests
+.PHONY: test
+test: deploy-k8s-microservices
 
 # Teardown targets
 .PHONY: rm-iofog-k8s
