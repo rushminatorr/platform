@@ -137,6 +137,10 @@ endif
 deploy-k8s-microservices:
 	helm install deploy/helm/iofog-microservices
 
+# Tests
+.PHONY: test
+test: deploy-k8s-microservices
+
 # Teardown targets
 .PHONY: rm-iofog-k8s
 rm-iofog-k8s:
