@@ -7,4 +7,4 @@ ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
 
 # Need to add the Agent host/ip in here dynamically
 [iofog-agent]
-34.66.20.118
+35.193.21.231

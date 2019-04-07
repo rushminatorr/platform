@@ -11,9 +11,9 @@ BUILD_DATE ?= $(shell date +%FT%T%z)
 K8S_VERSION ?= 1.13.4
 MINIKUBE_VERSION ?= 0.35.0
 
-# Install targets
-.PHONY: install
-install: install-helm install-kubectl install-jq install-ansible install-terraform install-gcloud
+# Install deps targets
+.PHONY: bootstrap
+bootstrap: install-helm install-kubectl install-jq install-ansible install-terraform install-gcloud
 
 .PHONY: install-helm
 install-helm:
@@ -136,9 +136,9 @@ endif
 # Tests
 .PHONY: test
 test:
-	helm install deploy/helm/iofog-microservices
-	kubectl wait --for=condition=Ready --timeout=400s pod -l app=weather-demo -n iofog
-	curl http://$(shell terraform output ip):$(shell terraform output port)
+	kubectl apply -f test/weather.yml
+	script/wait-for-pod.bash iofog app=weather-demo
+	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10
 
 # Teardown targets
 .PHONY: rm-iofog-k8s

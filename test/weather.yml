@@ -2,7 +2,7 @@ apiVersion: k8s.iofog.org/v1alpha1
 kind: IOFog
 metadata:
   name: weather-demo
-  namespace: {{ .Values.namespace }}
+  namespace: iofog
 spec:
   microservices:
     - name: "weather"
@@ -18,4 +18,4 @@ spec:
       ports:
         - internal: 80
           external: 5555
-  replicas: {{ .Values.replicas }}
+  replicas: 1

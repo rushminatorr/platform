@@ -1,6 +1,6 @@
 resource "google_compute_instance" "agent" {
   name = "${var.user}-agent-${random_id.instance_id.hex}"
-  machine_type = "f1-micro"
+  machine_type = "g1-small"
   zone = "us-central1-a"
 
   boot_disk {

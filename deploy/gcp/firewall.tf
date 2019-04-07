@@ -1,4 +1,4 @@
-resource "google_compute_firewall" "vm_firewall" {
+resource "google_compute_firewall" "agent_firewall" {
   name    = "${google_compute_instance.agent.name}-firewall"
   network = "default"
 
@@ -7,8 +7,6 @@ resource "google_compute_firewall" "vm_firewall" {
   }
   allow {
     protocol = "tcp"
-  }
-  allow {
-    protocol = "udp"
+    ports = ["5555"]
   }
 }

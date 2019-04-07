@@ -21,9 +21,9 @@ before_install:
  
 jobs:
   include:
-    - stage: install-deploy-test
+    - stage: bootstrap-deploy-test
       script:
-        - make install             # Install deps
+        - make bootstrap           # Install deps
         - make deploy              # Deploy infrastructure and services
         - make test                # Test ioFog services
       after_success:
