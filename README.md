@@ -3,8 +3,9 @@
 To install dependancies, deploy infrastructure on GCP, and deploy ioFog:
 ```
 export GCP_SVC_ACC=$(cat path/to/svc.json)
-make install
+make bootstrap
 make deploy
+make test
 ```
 
 # ioFog Git and Build Workflow
