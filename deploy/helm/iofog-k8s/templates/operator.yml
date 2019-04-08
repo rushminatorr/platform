@@ -91,7 +91,7 @@ metadata:
   name: operator
   namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.operator.replicas }}
   selector:
     matchLabels:
       name: operator

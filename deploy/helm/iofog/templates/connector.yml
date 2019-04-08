@@ -18,3 +18,4 @@ spec:
       containers:
       - name: connector
         image: {{ .Values.connector.image.repository }}:{{ .Values.connector.image.tag }}
+        imagePullPolicy: {{ .Values.connector.image.pullPolicy }}

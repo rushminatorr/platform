@@ -5,7 +5,7 @@ controller:
   image: 
     repository: edgeworx/controller-k8s
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   port: 51121
 
 connector:
@@ -13,4 +13,4 @@ connector:
   image: 
     repository: iofog/connector
     tag: dev
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
