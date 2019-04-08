@@ -2,7 +2,7 @@ namespace: iofog
 
 controller:
   token: ""
-  host: controller
+  host: http://controller
   port: 51121
 
 scheduler:

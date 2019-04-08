@@ -121,7 +121,7 @@ deploy-k8s-exts:
 	$(eval IP=$(shell script/wait-for-lb.bash iofog controller))
 	$(eval PORT=51121)
 	$(eval TOKEN=$(shell script/get-controller-token.bash $(IP) $(PORT)))
-	helm install deploy/helm/iofog-k8s --set-string controller.token=$(TOKEN),controller.host=http://$(IP),controller.port=$(PORT)
+	helm install deploy/helm/iofog-k8s --set-string controller.token=$(TOKEN)
 
 .PHONY: deploy-agent
 deploy-agent:
@@ -138,7 +138,7 @@ endif
 test:
 	kubectl apply -f test/weather.yml
 	script/wait-for-pod.bash iofog app=weather-demo
-	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10
+	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10 | jq
 
 # Teardown targets
 .PHONY: rm-iofog-k8s
