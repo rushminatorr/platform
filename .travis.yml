@@ -23,10 +23,12 @@ jobs:
   include:
     - stage: bootstrap-deploy-test
       script:
-        - make bootstrap           # Install deps
-        - make deploy              # Deploy infrastructure and services
-        - make test                # Test ioFog services
+        - echo "Testing"
+        - make bootstrap                    # Install deps
+        - make deploy                       # Deploy infrastructure and services
+        - make test                         # Test ioFog services
       after_success:
-        - TAG=rel make push-imgs   # Push release packages
+        - export BRANCH=$TRAVIS_BRANCH
+        - make push                         # Push release packages
       after_script:
-        - make rm-gcp              # Teardown GCP clusters
+        - make rm-gcp                       # Teardown GCP clusters

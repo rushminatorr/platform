@@ -1,16 +1,20 @@
 SHELL = /bin/bash
 OS = $(shell uname -s | tr A-Z a-z)
 
-# Project variables
-PACKAGE = github.com/iofog/iofog-platform
-
 # Build variables
+BRANCH ?= ""
 VERSION ?= $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT_HASH ?= $(shell git rev-parse --short HEAD 2>/dev/null)
 BUILD_DATE ?= $(shell date +%FT%T%z)
+
+# Bootstrap variables
 K8S_VERSION ?= 1.13.4
+HELM_VERSION ?= 2.13.1
+TERRAFORM_VERSION ?= 0.11.13
+GCLOUD_VERSION ?= 240.0.0
 MINIKUBE_VERSION ?= 0.35.0
 
+# Cloud infra variables
 GCP_PROJ ?= "focal-freedom-236620"
 
 # Install deps targets
@@ -19,7 +23,7 @@ bootstrap: install-helm install-kubectl install-jq install-ansible install-terra
 
 .PHONY: install-helm
 install-helm:
-	curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-v2.13.1-$(OS)-amd64.tar.gz
+	curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-v$(HELM_VERSION)-$(OS)-amd64.tar.gz
 	tar -xf helm.tar.gz
 	rm helm.tar.gz
 	sudo mv $(OS)-amd64/helm /usr/local/bin
@@ -59,14 +63,14 @@ install-minikube:
 
 .PHONY: install-terraform
 install-terraform:
-	curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_$(OS)_amd64.zip
+	curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/$(TERRAFORM_VERSION)/terraform_$(TERRAFORM_VERSION)_$(OS)_amd64.zip
 	sudo unzip -q terraform.zip -d /opt/terraform
 	rm -f terraform.zip
 	sudo ln -s /opt/terraform/terraform /usr/local/bin/terraform
 
 .PHONY: install-gcloud
 install-gcloud:
-	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-240.0.0-$(OS)-x86_64.tar.gz
+	curl -Lo gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$(GCLOUD_VERSION)-$(OS)-x86_64.tar.gz
 	tar -xf gcloud.tar.gz
 	rm gcloud.tar.gz
 	google-cloud-sdk/install.sh -q
@@ -162,13 +166,9 @@ rm-minikube:
 	sudo minikube stop
 	sudo minikube delete
 
-.PHONY: push-imgs
-push-imgs:
-	@echo 'TODO :)'
-#	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin
-#	for IMG in $(IOFOG_IMGS) ; do \
-#		docker push $(IMAGE):$(TAG) ; \
-#	done
+.PHONY: push
+push:
+	script/push.bash $(COMMIT_HASH) $(GIT_USER) $(GIT_EMAIL) $(GIT_TOKEN)
 
 .PHONY: clean
 clean:
