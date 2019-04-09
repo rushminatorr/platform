@@ -11,6 +11,8 @@ BUILD_DATE ?= $(shell date +%FT%T%z)
 K8S_VERSION ?= 1.13.4
 MINIKUBE_VERSION ?= 0.35.0
 
+GCP_PROJ ?= "focal-freedom-236620"
+
 # Install deps targets
 .PHONY: bootstrap
 bootstrap: install-helm install-kubectl install-jq install-ansible install-terraform install-gcloud
@@ -81,9 +83,9 @@ gen-creds:
 deploy-gcp: 
 	printenv GCP_SVC_ACC > creds/svcacc.json
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
-	gcloud config set project edgeworx
+	gcloud config set project $(GCP_PROJ)
 	terraform init deploy/gcp
-	terraform apply -var user=$(USER) -auto-approve deploy/gcp
+	terraform apply -var user=$(USER) -var gcp_project=$(GCP_PROJ) -auto-approve deploy/gcp
 
 .PHONY: deploy-kind
 deploy-kind: install-kind
@@ -138,7 +140,7 @@ endif
 test:
 	kubectl apply -f test/weather.yml
 	script/wait-for-pod.bash iofog app=weather-demo
-	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10 | jq
+	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10
 
 # Teardown targets
 .PHONY: rm-iofog-k8s
@@ -149,7 +151,7 @@ rm-iofog-k8s:
 .PHONY: rm-gcp
 rm-gcp:
 	printenv GCP_SVC_ACC > creds/svcacc.json
-	terraform destroy -var user=$(USER) -auto-approve deploy/gcp
+	terraform destroy -var user=$(USER) -var gcp_project=$(GCP_PROJ) -auto-approve deploy/gcp
 
 .PHONY: rm-kind
 rm-kind:

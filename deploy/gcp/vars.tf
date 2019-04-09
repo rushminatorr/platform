@@ -11,3 +11,8 @@ variable "agent_port" {
     type = "string"
     default = "5555"
 }
+
+variable "gcp_project" {
+    type = "string"
+    default = ""
+}
