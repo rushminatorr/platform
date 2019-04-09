@@ -100,7 +100,7 @@ deploy-minikube: install-minikube
 
 .PHONY: init-gke
 init-gke:
-	script/wait-for-gke.bash
+	script/wait-for-gke.bash $(shell terraform output name)
 	gcloud container clusters get-credentials $(shell terraform output name) --zone $(shell terraform output zone)
 	kubectl cluster-info
 	helm init --wait
