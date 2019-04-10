@@ -23,7 +23,6 @@ jobs:
   include:
     - stage: bootstrap-deploy-test
       script:
-        - echo "Testing"
         - make bootstrap                    # Install deps
         - make deploy                       # Deploy infrastructure and services
         - make test                         # Test ioFog services
