@@ -2,30 +2,6 @@
 # Ansible Playbook to setup and configure iofog Agent
 #
 ---
-
-#
-# All of the tasks needed for the iofog Agent host
-#
-- hosts: localhost
-  tasks:
-    - name: Get credentials for k8s
-      shell: gcloud container clusters get-credentials $(terraform output -state=../../terraform.tfstate name) --zone $(terraform output -state=../../terraform.tfstate zone)
-      register: credsoutput
-
-    - debug: var=credsoutput
-
-      # Get controller ip
-    - name: Get iofog-controller ip address
-      shell: kubectl get services --output=json -n iofog | jq -j '.items[] | select(.metadata.name == "controller").status.loadBalancer.ingress[0].ip'
-      register: controllerout
-
-    - debug: var=controllerout.stdout
-
-    # TODO: This is a hack! Fix it asap
-    - name: Store controller IP
-      shell: echo "{{ controllerout.stdout }}" > /tmp/controller-ip
-
-
 #
 # All of the tasks needed for the iofog Agent host
 #
@@ -36,18 +12,6 @@
     - name: Begin!
       command: echo "Beginning install of iofogAgent software"
       register: echo
-
-    - name: Copy controller-ip to agent host
-      copy:
-        src: /tmp/controller-ip
-        dest: controller-ip
-        mode: 755
-
-    - name: Get the controller IP address
-      shell: cat controller-ip
-      register: controllerIP
-
-    - debug: var=controllerIP.stdout
 
     - name: Hack workaround for installing non authenticated packages
       copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
@@ -95,7 +59,7 @@
     - debug: var=freq.stdout
 
     - name: Change Controller URL
-      shell: iofog-agent config -a http://"{{ controllerIP.stdout }}":51121/api/v3/
+      shell: iofog-agent config -a http://"{{ controller_ip }}":51121/api/v3/
       register: url
 
     - debug: var=url
@@ -110,7 +74,7 @@
     - debug: var=copy_script
 
     - name: Run the Agent setup
-      shell: ./setup-agent.sh http://"{{ controllerIP.stdout }}":51121/api/v3
+      shell: ./setup-agent.sh http://"{{ controller_ip }}":51121/api/v3
       register: setup
 
     - debug: var=setup

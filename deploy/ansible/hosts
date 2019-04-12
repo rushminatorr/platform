@@ -1,10 +1,9 @@
-# Connection details
 [all:vars]
 ansible_connection=ssh
-ansible_user=iofog
+ansible_user=root
 ansible_ssh_private_key_file=creds/id_ecdsa
 ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+controller_ip=147.75.194.164
 
-# Need to add the Agent host/ip in here dynamically
 [iofog-agent]
-35.202.243.250
+147.75.195.129

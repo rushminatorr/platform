@@ -9,14 +9,14 @@ scheduler:
   replicas: 1
   image:
     repository: iofog/iofog-scheduler
-    tag: dev
+    tag: develop
     pullPolicy: Always
 
 operator:
   replicas: 1
   image:
     repository: iofog/iofog-operator
-    tag: dev
+    tag: develop
     pullPolicy: Always
   port: 60000
 
@@ -24,7 +24,7 @@ kubelet:
   replicas: 1
   image:
     repository: iofog/iofog-kubelet
-    tag: dev
+    tag: develop
     pullPolicy: Always
   apiServerHost: kubernetes.default.svc
   apiServerPort: 443

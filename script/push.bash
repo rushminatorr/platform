@@ -24,4 +24,6 @@ if [ "$BRANCH" == "develop" ] || [ "$BRANCH" == "master" ] ; then
     cd "$REPO_DIR"
     git commit -a -m "$VERSION" 
     git push "https://$GIT_TOKEN@github.com/eclipse-iofog/iofog-platform.git"
+else
+    echo "Nothing to push in this branch"
 fi

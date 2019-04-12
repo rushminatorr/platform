@@ -17,14 +17,14 @@ resource "google_compute_instance" "agent" {
   }
 
   metadata {
-   sshKeys = "iofog:${file("creds/id_ecdsa.pub")}"
+   sshKeys = "${var.user}:${file("creds/id_ecdsa.pub")}"
  }
  // A variable for extracting the external ip of the instance
 }
-output "ip" {
+output "agent_ip" {
  value = "${google_compute_instance.agent.network_interface.0.access_config.0.nat_ip}"
 }
 
-output "port" {
+output "agent_port" {
  value = "${var.agent_port}"
 }

@@ -15,9 +15,12 @@ GCLOUD_VERSION ?= 240.0.0
 MINIKUBE_VERSION ?= 0.35.0
 
 # Cloud infra variables
+KUBE_CFG := creds/kube.conf
 GCP_PROJ ?= "focal-freedom-236620"
+PKT_PROJ ?= "880125b9-d7b6-43c3-99f5-abd1af3ce879"
+AGENT_USER ?= $(USER) 
 
-# Install deps targets
+################# Bootstrap targets #################
 .PHONY: bootstrap
 bootstrap: install-helm install-kubectl install-jq install-ansible install-terraform install-gcloud
 
@@ -35,10 +38,6 @@ install-kubectl:
 	curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$(K8S_VERSION)/bin/$(OS)/amd64/kubectl
 	chmod +x kubectl
 	sudo mv kubectl /usr/local/bin/
-
-.PHONY: install-kind
-install-kind:
-	go get sigs.k8s.io/kind
 
 .PHONY: install-jq
 install-jq:
@@ -75,105 +74,133 @@ install-gcloud:
 	rm gcloud.tar.gz
 	google-cloud-sdk/install.sh -q
 
-# Deploy targets
-.PHONY: deploy
-deploy: gen-creds deploy-gcp init-gke deploy-iofog-k8s deploy-agent
-
-.PHONY: gen-creds
-gen-creds:
-	ssh-keygen -t ecdsa -N "" -f creds/id_ecdsa -q
-
+################# Top-level deploy targets #################
 .PHONY: deploy-gcp
-deploy-gcp: 
+deploy-gcp: setup-gcp init-gcp init-helm deploy-iofog
+
+.PHONY: deploy-packet
+deploy-packet: setup-packet init-packet init-helm deploy-iofog
+
+################# Lower-level deploy targets #################
+.PHONY: deploy-iofog
+deploy-iofog: deploy-k8s-core deploy-k8s-exts deploy-agent
+
+.PHONY: setup-gcp
+setup-gcp: export KUBECONFIG=$(KUBE_CFG)
+setup-gcp:
+	yes | ssh-keygen -t ecdsa -N "" -f creds/id_ecdsa -q
 	printenv GCP_SVC_ACC > creds/svcacc.json
 	gcloud auth activate-service-account --key-file=creds/svcacc.json
 	gcloud config set project $(GCP_PROJ)
 	terraform init deploy/gcp
 	terraform apply -var user=$(USER) -var gcp_project=$(GCP_PROJ) -auto-approve deploy/gcp
 
-.PHONY: deploy-kind
-deploy-kind: install-kind
-	kind create cluster
-	$(eval export KUBECONFIG=$(shell kind get kubeconfig-path))
-	kubectl cluster-info
-
-.PHONY: deploy-minikube
-deploy-minikube: install-minikube
-	sudo minikube start --kubernetes-version=v$(K8S_VERSION)
-	sudo minikube update-context
-
-.PHONY: init-gke
-init-gke:
+.PHONY: init-gcp
+init-gcp: export KUBECONFIG=$(KUBE_CFG)
+init-gcp:
 	script/wait-for-gke.bash $(shell terraform output name)
 	gcloud container clusters get-credentials $(shell terraform output name) --zone $(shell terraform output zone)
 	kubectl cluster-info
+
+.PHONY: setup-packet
+setup-packet:
+	yes | ssh-keygen -t ecdsa -N "" -f creds/id_ecdsa -q
+	printenv PKT_TKN | tr -d '\n' > creds/packet.token
+	terraform init deploy/packet
+	terraform apply -var project_id=$(PKT_PROJ) -auto-approve deploy/packet 
+
+.PHONY: init-packet
+init-packet: export KUBECONFIG=$(KUBE_CFG)
+init-packet:
+	rsync -e "ssh -i creds/id_ecdsa -o StrictHostKeyChecking=no" $(shell terraform output user)@$(shell terraform output host):$(shell terraform output kubeconfig) $(KUBE_CFG)
+	kubectl get nodes
+	$(eval AGENT_USER=root)
+	script/wait-for-pods.bash kube-system
+
+.PHONY: init-helm
+init-helm: export KUBECONFIG=$(KUBE_CFG)
+init-helm:
 	helm init --wait
 	kubectl create serviceaccount --namespace kube-system tiller
 	kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 	kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 	kubectl rollout status --watch deployment/tiller-deploy -n kube-system
 
-.PHONY: deploy-iofog-k8s
-deploy-iofog-k8s: deploy-k8s-core deploy-k8s-exts
-
 .PHONY: deploy-k8s-core
+deploy-k8s-core: export KUBECONFIG=$(KUBE_CFG)
 deploy-k8s-core:
 	kubectl create namespace iofog
 	helm install deploy/helm/iofog
+	@echo "Waiting for Controller Pod..."
+	script/wait-for-pods.bash iofog name=controller
 	@echo "Waiting for Controller LoadBalancer IP..."
 
 .PHONY: deploy-k8s-exts
+deploy-k8s-exts: export KUBECONFIG=$(KUBE_CFG)
 deploy-k8s-exts:
-	$(eval IP=$(shell script/wait-for-lb.bash iofog controller))
+	$(eval IP=$(shell KUBECONFIG=$(KUBE_CFG) script/wait-for-lb.bash iofog controller))
 	$(eval PORT=51121)
 	$(eval TOKEN=$(shell script/get-controller-token.bash $(IP) $(PORT)))
 	helm install deploy/helm/iofog-k8s --set-string controller.token=$(TOKEN)
 
 .PHONY: deploy-agent
 deploy-agent:
-	$(eval AGENT_IP=$(shell terraform output ip))
+	$(eval AGENT_IP=$(shell terraform output agent_ip))
+	$(eval CTRL_IP=$(shell KUBECONFIG=$(KUBE_CFG) script/wait-for-lb.bash iofog controller))
 ifeq ($(OS), darwin)
 	sed -i '' -e '/\[iofog-agent\]/ {' -e 'n; s/.*/$(AGENT_IP)/' -e '}' deploy/ansible/hosts
+	sed -i '' -e 's/ansible_user=.*/ansible_user=$(AGENT_USER)/g' deploy/ansible/hosts
+	sed -i '' -e 's/controller_ip=.*/controller_ip=$(CTRL_IP)/g' deploy/ansible/hosts
 else
 	sed -i '/\[iofog-agent\]/!b;n;c$(AGENT_IP)' deploy/ansible/hosts
+	sed -i 's/ansible_user=.*/ansible_user=$(AGENT_USER)/g' deploy/ansible/hosts
+	sed -i 's/controller_ip=.*/controller_ip=$(CTRL_IP)/g' deploy/ansible/hosts
 endif
 	ANSIBLE_CONFIG=deploy/ansible ansible-playbook -i deploy/ansible/hosts deploy/ansible/iofog-agent.yml
 
-# Tests
+################# Test targets #################
 .PHONY: test
+test: export KUBECONFIG=$(KUBE_CFG)
 test:
 	kubectl apply -f test/weather.yml
-	script/wait-for-pod.bash iofog app=weather-demo
-	curl http://$(shell terraform output ip):$(shell terraform output port) --connect-timeout 10
+	script/wait-for-pods.bash iofog app=weather-demo
+	curl http://$(shell terraform output agent_ip):$(shell terraform output agent_port) --connect-timeout 10
 
-# Teardown targets
+################# Teardown targets #################
 .PHONY: rm-iofog-k8s
+rm-iofog-k8s: export KUBECONFIG=$(KUBE_CFG)
 rm-iofog-k8s:
 	helm delete --purge $(shell helm ls | awk '$$9 ~ /iofog/ { print $$1 }')
 	kubectl delete ns iofog
 
 .PHONY: rm-gcp
 rm-gcp:
-	printenv GCP_SVC_ACC > creds/svcacc.json
 	terraform destroy -var user=$(USER) -var gcp_project=$(GCP_PROJ) -auto-approve deploy/gcp
+	rm -f terraform.tfstate*
+	rm -f creds/svcacc.json
+	rm -f creds/kube.conf 
+	rm -f creds/id_*
 
-.PHONY: rm-kind
-rm-kind:
-	kind delete cluster
-
-.PHONY: rm-minikube
-rm-minikube:
-	sudo minikube stop
-	sudo minikube delete
-
-.PHONY: push
-push:
-	script/push.bash $(COMMIT_HASH) $(GIT_USER) $(GIT_EMAIL) $(GIT_TOKEN)
+.PHONY: rm-packet
+rm-packet:
+	terraform destroy -var project_id=$(PKT_PROJ) -auto-approve deploy/packet
+	rm -f terraform.tfstate*
+	rm -f creds/packet.*
+	rm -f creds/kube.conf 
+	rm -f creds/id_*
 
 .PHONY: clean
 clean:
 	rm -f creds/svcacc.json || true
-	rm -f creds/id_*
+	rm -f creds/id_* || true
+	rm -f creds/packet.* || true
+	rm -f terraform.tfstate* || true
+	rm -f creds/kube.conf || true
+
+################# Misc targets #################
+.PHONY: push
+push:
+	script/push.bash $(COMMIT_HASH) $(GIT_USER) $(GIT_EMAIL) $(GIT_TOKEN)
 
 .PHONY: list help
 .DEFAULT_GOAL := help
