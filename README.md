@@ -1,11 +1,25 @@
 # Usage
 
-To install dependancies, deploy infrastructure on GCP, and deploy ioFog:
+## Deploy on GCP
+
+Generate a service account on GCP first. Make sure it has access to GCE, GKE, and Service Account Usage.
 ```
 export GCP_SVC_ACC=$(cat path/to/svc.json)
 make bootstrap
-make deploy
+make deploy-gcp
 make test
+make rm-gcp
+```
+
+## Deploy on Packet
+
+Generate an access token for your Packet account first.
+```
+export PKT_TKN=$(cat path/to/token)
+make bootstrap
+make deploy-packet
+make test
+make rm-packet
 ```
 
 # ioFog Git and Build Workflow
