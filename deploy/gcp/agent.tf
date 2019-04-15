@@ -21,8 +21,8 @@ resource "google_compute_instance" "agent" {
  }
  // A variable for extracting the external ip of the instance
 }
-output "agent_ip" {
- value = "${google_compute_instance.agent.network_interface.0.access_config.0.nat_ip}"
+output "agent_ips" {
+ value = ["${google_compute_instance.agent.network_interface.0.access_config.0.nat_ip}"]
 }
 
 output "agent_port" {

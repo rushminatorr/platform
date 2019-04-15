@@ -31,3 +31,16 @@ resource "packet_device" "x86_node" {
   billing_cycle = "hourly"
   project_id    = "${var.project_id}"
 }
+
+# K8s ARM nodes are boken AFAIK. Certain services like Kube DNS and Tiller cannot run on ARM.
+#resource "packet_device" "arm_node" {
+#  hostname         = "${format("${var.cluster_name}-arm-${var.pool_label}-%02d", count.index)}"
+#  operating_system = "ubuntu_18_04"
+#  count            = "${var.count_arm}"
+#  plan             = "${var.plan_arm}"
+#  facility         = "${var.facility}"
+#  user_data        = "${data.template_file.node.rendered}"
+#
+#  billing_cycle = "hourly"
+#  project_id    = "${var.project_id}"
+#}

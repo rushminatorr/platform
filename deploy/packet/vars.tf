@@ -33,12 +33,12 @@ variable "cluster_name" {
 }
 
 variable "count_arm" {
-  default     = "1"
+  default     = "0"
   description = "Number of ARM nodes."
 }
 
 variable "count_x86" {
-  default     = "1"
+  default     = "2"
   description = "Number of x86 nodes."
 }
 

@@ -145,14 +145,12 @@ deploy-k8s-exts:
 
 .PHONY: deploy-agent
 deploy-agent:
-	$(eval AGENT_IP=$(shell terraform output agent_ip))
 	$(eval CTRL_IP=$(shell KUBECONFIG=$(KUBE_CFG) script/wait-for-lb.bash iofog controller))
+	script/add-agent-hosts.bash $(shell terraform output agent_ips | tr -d ',')
 ifeq ($(OS), darwin)
-	sed -i '' -e '/\[iofog-agent\]/ {' -e 'n; s/.*/$(AGENT_IP)/' -e '}' deploy/ansible/hosts
 	sed -i '' -e 's/ansible_user=.*/ansible_user=$(AGENT_USER)/g' deploy/ansible/hosts
 	sed -i '' -e 's/controller_ip=.*/controller_ip=$(CTRL_IP)/g' deploy/ansible/hosts
 else
-	sed -i '/\[iofog-agent\]/!b;n;c$(AGENT_IP)' deploy/ansible/hosts
 	sed -i 's/ansible_user=.*/ansible_user=$(AGENT_USER)/g' deploy/ansible/hosts
 	sed -i 's/controller_ip=.*/controller_ip=$(CTRL_IP)/g' deploy/ansible/hosts
 endif
@@ -164,7 +162,7 @@ test: export KUBECONFIG=$(KUBE_CFG)
 test:
 	kubectl apply -f test/weather.yml
 	script/wait-for-pods.bash iofog app=weather-demo
-	curl http://$(shell terraform output agent_ip):$(shell terraform output agent_port) --connect-timeout 10
+	script/test-agents.bash $(shell terraform output agent_port) $(shell terraform output agent_ips | tr -d ',') 
 
 ################# Teardown targets #################
 .PHONY: rm-iofog-k8s

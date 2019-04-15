@@ -1,6 +1,7 @@
 # Usage
 
 ## Deploy on GCP
+![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/gcp.png)
 
 Generate a service account on GCP first. Make sure it has access to GCE, GKE, and Service Account Usage.
 ```
@@ -12,6 +13,7 @@ make rm-gcp
 ```
 
 ## Deploy on Packet
+![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/packet.png)
 
 Generate an access token for your Packet account first.
 ```
@@ -26,4 +28,4 @@ make rm-packet
 
 ioFog is a platform built from a number of services which reside in other repositories. This repository consolidates all of the ioFog services for the purposes of testing and releasing.
 
-![alt text](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/artefacts.png)
+![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/artefacts.png)

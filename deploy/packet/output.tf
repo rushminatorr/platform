@@ -13,8 +13,8 @@ output "host" {
   value = "${packet_device.k8s_primary.network.0.address}"
 }
 
-output "agent_ip" {
-  value = "${packet_device.edgy_agent.network.0.address}"
+output "agent_ips" {
+  value = ["${packet_device.agent_x86.network.0.address}","${packet_device.agent_arm.network.0.address}"]
 }
   
 output "agent_port" {
