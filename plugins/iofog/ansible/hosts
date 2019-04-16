@@ -1,0 +1,9 @@
+[all:vars]
+ansible_connection=ssh
+ansible_ssh_private_key_file=conf/id_ecdsa
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+controller_ip=147.75.198.174
+
+[iofog-agent]
+root@147.75.79.217
+root@139.178.83.26

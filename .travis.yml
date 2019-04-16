@@ -1,33 +1,25 @@
 sudo: required
 
-# Go for Kubernetes in Docker
-language: go
-go:
-  - '1.11.x'
+language: python
+python:
+  - "2.7"
+cache: pip
+install:
+  - pip install -r requirements.txt
 
 dist: xenial
 
 services:
   - docker
-
-# Default Travis version of compose does not suffice
-env:
-  - DOCKER_COMPOSE_VERSION=1.22.0
-before_install:
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
  
 jobs:
   include:
     - stage: bootstrap-deploy-test
       script:
-        - make bootstrap                    # Install deps
-        - make deploy-gcp                   # Deploy infra and services
-        - make test                         # Test ioFog services
-      after_success:
-        - export BRANCH=$TRAVIS_BRANCH
-        - make push                         # Push release packages
+        - printenv GCP_SVC_ACC > plugins/gcp/creds/svcacc.json
+        - python spin.py up gcp --bootstrap=true
+        - python spin.py up iofog --bootstrap=true
+        - python spin.py up weather
+        - python spin.py test weather
       after_script:
-        - make rm-gcp                       # Teardown infra
+        - python spin.py down gcp

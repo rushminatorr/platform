@@ -1,31 +1,40 @@
-# Usage
+# Spin
 
-## Deploy on GCP
-![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/gcp.png)
+Spin is an orchestration utility. It is designed to deploy any infrastructure, platforms, and services that are exposed as plugins. 
 
-Generate a service account on GCP first. Make sure it has access to GCE, GKE, and Service Account Usage.
+![img not found](https://raw.githubusercontent.com/eclipse-iofog/spin/develop/spin.png)
+
+To create a plugin, you must implement a Python module in the plugins folder.
+
+plugins/gcp is an example of an infrastructure deployment plugin.
+
+plugins/iofog is an example of a platform deployment plugin.
+
+plugins/weather is an example of a service deployment plugin.
+
+Each plugin must provide a README.md as to its required inputs and expected outputs. Plugins have arbitrary inputs and outputs in the form of various configuration files. Chaining plugins together through configuration files allows us to decouple invocations of different plugins. You can therefore think of each plugin as a batch job where configuration files are their inputs and outputs.
+
+The following is an example of how you can bootstrap, deploy, and test an entire infrastructure, platform and service deployment:
 ```
-export GCP_SVC_ACC=$(cat path/to/svc.json)
-make bootstrap
-make deploy-gcp
-make test
-make rm-gcp
+# Infrastructure
+python spin.py up gcp --bootstrap=true
+python spin.py test gcp
+
+# Platform
+python spin.py up iofog --bootstrap=true
+python spin.py test iofog
+
+# Service
+python spin.py up weather --bootstrap=true
+python spin.py test weather
+
+# Check status / info
+python spin.py describe weather
+python spin.py describe iofog
+python spin.py describe gcp
+
+# Clean up
+python spin.py down weather
+python spin.py down iofog
+python spin.py down gcp
 ```
-
-## Deploy on Packet
-![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/packet.png)
-
-Generate an access token for your Packet account first.
-```
-export PKT_TKN=$(cat path/to/token)
-make bootstrap
-make deploy-packet
-make test
-make rm-packet
-```
-
-# ioFog Git and Build Workflow
-
-ioFog is a platform built from a number of services which reside in other repositories. This repository consolidates all of the ioFog services for the purposes of testing and releasing.
-
-![img not found](https://raw.githubusercontent.com/iofog/iofog-platform/develop/docs/artefacts.png)
