@@ -1,5 +1,5 @@
 resource "google_compute_firewall" "agent_firewall" {
-  name    = "${google_compute_instance.agent.name}-firewall"
+  name = "${var.user}-${random_id.instance_id.hex}"
   network = "default"
 
   allow {
