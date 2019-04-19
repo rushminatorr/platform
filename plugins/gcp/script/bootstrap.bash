@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 OS=$(uname -s | tr A-Z a-z)
 GCLOUD_VERSION=240.0.0
 TERRAFORM_VERSION=0.11.13 
@@ -15,6 +13,7 @@ rm -r google-cloud-sdk
 
 # Terraform
 curl -fSL -o terraform.zip https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_"$OS"_amd64.zip
+sudo mkdir -p /usr/local/opt/
 sudo unzip -q terraform.zip -d /usr/local/opt/terraform
 rm -f terraform.zip
 sudo ln -s /usr/local/opt/terraform/terraform /usr/local/bin/terraform
