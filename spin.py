@@ -13,15 +13,19 @@ plugin_source = plugin_base.make_plugin_source(searchpath=subdirs('plugins'))
 class spin(object):
   """Class for spinning up infrastructure, platforms, and services"""
 
-  def up(self, plugin, bootstrap = False):
+  def help(self, plugin):
+    plug = plugin_source.load_plugin(plugin)
+    plug.help()
+
+  def up(self, plugin, **kwargs):
     """Spin up plugin"""
     plug = plugin_source.load_plugin(plugin)
-    plug.up(bootstrap)
+    plug.up(**kwargs)
 
-  def down(self, plugin):
+  def down(self, plugin, **kwargs):
     """Spin down plugin"""
     plug = plugin_source.load_plugin(plugin)
-    plug.down()
+    plug.down(**kwargs)
   
   def test(self, plugin):
     """Test deployment of plugin"""

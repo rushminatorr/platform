@@ -7,8 +7,29 @@ def cmd(cmd_str):
     if ret != 0:
         raise Exception('Command failed: ' + cmd_str)
 
-def up(bootstrap):
-    if bootstrap:
+def str2bool(v):
+  if isinstance(v, bool):
+      return v
+  return v.lower() in ("yes", "true")
+
+def help():
+    print 'ioFog Kubernetes and Agent nodes'
+
+def up(**kwargs):
+    if 'help' in kwargs:
+        print 'Default arguments:'
+        print '--bootstrap=false'
+        return
+
+    # Default args
+    args = {}
+    args['bootstrap'] = False
+
+    # Parse input args
+    for key, val in kwargs.items():
+        args[key] = str2bool(val)
+
+    if args['bootstrap']:
         cmd('plugins/packet/script/bootstrap.bash')
     cmd('plugins/packet/script/deploy.bash')
 
