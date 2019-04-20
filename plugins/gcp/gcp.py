@@ -13,15 +13,26 @@ def str2bool(v):
   return v.lower() in ("yes", "true")
 
 def help():
+    print ''
     print 'Kubernetes cluster and edge nodes on GCP'
+    print ''
+    print 'Usage:       python spin.py up gcp'
+    print '             python spin.py down gcp'
+    print '             python spin.py describe gcp'
+    print '             python spin.py test gcp'
+    print ''
+    print 'Use --help on the up/down commands for more information'
 
 def up(**kwargs):
     if 'help' in kwargs:
-        print 'Default arguments:'
-        print '--bootstrap=false'
-        print '--gen-creds=true'
-        print '--cluster=true'
-        print '--edge=true'
+        print ''
+        print 'Spin up infrastructure on GCP'
+        print ''
+        print 'Arguments:       --bootstrap     Default: false      Install dependancies'
+        print '                 --gen-creds     Default: true       Generate new pub/priv key pair (overwrites previous)'
+        print '                 --cluster       Default: true       Spin up Kubernetes cluster'
+        print '                 --edge          Default: true       Spin up edge nodes'
+        print ''
         return
 
     # Default args
@@ -58,9 +69,12 @@ def up(**kwargs):
 
 def down(**kwargs):
     if 'help' in kwargs:
-        print 'Default arguments:'
-        print '--cluster=true'
-        print '--edge=true'
+        print ''
+        print 'Spin down infrastructure on GCP'
+        print ''
+        print 'Arguments:       --cluster       Default: true       Spin down Kubernetes cluster'
+        print '                 --edge          Default: true       Spin down edge nodes'
+        print ''
         return
 
     # Default args

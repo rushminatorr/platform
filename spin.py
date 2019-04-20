@@ -13,7 +13,13 @@ plugin_source = plugin_base.make_plugin_source(searchpath=subdirs('plugins'))
 class spin(object):
   """Class for spinning up infrastructure, platforms, and services"""
 
+  def list(self):
+    """List all available plugins"""
+    for dir in subdirs('plugins'):
+      print dir.replace('plugins/', '')
+
   def help(self, plugin):
+    """Print help information for plugin"""
     plug = plugin_source.load_plugin(plugin)
     plug.help()
 
