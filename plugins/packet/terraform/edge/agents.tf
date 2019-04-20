@@ -1,4 +1,4 @@
-resource "packet_ssh_key" "key1" {
+resource "packet_ssh_key" "edge_key" {
   name       = "automationkey"
   public_key = "${file("plugins/packet/creds/id_ecdsa.pub")}"
 }
@@ -10,7 +10,7 @@ resource "packet_device" "agent_arm" {
   billing_cycle     = "hourly"
   project_id        = "${var.project_id}"
   facility          = "dfw2"
-  depends_on       = ["packet_ssh_key.key1"]
+  depends_on       = ["packet_ssh_key.edge_key"]
 }
 
 resource "packet_device" "agent_x86" {
@@ -20,5 +20,5 @@ resource "packet_device" "agent_x86" {
   billing_cycle     = "hourly"
   project_id        = "${var.project_id}"
   facility          = "${var.facility}"
-  depends_on       = ["packet_ssh_key.key1"]
+  depends_on       = ["packet_ssh_key.edge_key"]
 }

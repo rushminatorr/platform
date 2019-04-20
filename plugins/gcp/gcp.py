@@ -15,7 +15,7 @@ def str2bool(v):
 def help():
     print ''
     print 'Kubernetes cluster and edge nodes on GCP'
-    print ''
+    print 'packet-'
     print 'Usage:       python spin.py up gcp'
     print '             python spin.py down gcp'
     print '             python spin.py describe gcp'
@@ -56,12 +56,12 @@ def up(**kwargs):
 
     # Deploy Kubernetes cluster
     if args['cluster']:
-        cmd('plugins/gcp/script/set-workspace.bash cluster')
+        cmd('plugins/gcp/script/set-workspace.bash gcp-cluster')
         cmd('plugins/gcp/script/deploy-cluster.bash')
     
     # Deploy edge nodes
     if args['edge']:
-        cmd('plugins/gcp/script/set-workspace.bash edge')
+        cmd('plugins/gcp/script/set-workspace.bash gcp-edge')
         cmd('plugins/gcp/script/deploy-edge.bash')
 
     cmd('cp plugins/gcp/creds/id_ecdsa conf/')
@@ -87,11 +87,11 @@ def down(**kwargs):
         args[key] = str2bool(val)
 
     if args['cluster']:
-        cmd('plugins/gcp/script/set-workspace.bash cluster')
+        cmd('plugins/gcp/script/set-workspace.bash gcp-cluster')
         cmd('plugins/gcp/script/destroy.bash cluster')
     
     if args['edge']:
-        cmd('plugins/gcp/script/set-workspace.bash edge')
+        cmd('plugins/gcp/script/set-workspace.bash gcp-edge')
         cmd('plugins/gcp/script/destroy.bash edge')
 
 def test():

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-plugins/weather/script/wait-for-pods.bash iofog app=weather-demo
+#plugins/weather/script/wait-for-pods.bash iofog app=weather-demo
 PORT=5555
 HOSTS=$(cat conf/agents.conf)
 for HOST in "${HOSTS[@]}"

@@ -12,6 +12,11 @@ data "template_file" "controller" {
   }
 }
 
+resource "packet_ssh_key" "cluser_key" {
+  name       = "automationkey"
+  public_key = "${file("plugins/packet/creds/id_ecdsa.pub")}"
+}
+
 resource "packet_device" "k8s_primary" {
   hostname         = "${var.cluster_name}-controller"
   operating_system = "ubuntu_18_04"
@@ -21,6 +26,7 @@ resource "packet_device" "k8s_primary" {
 
   billing_cycle = "hourly"
   project_id = "${var.project_id}"
+  depends_on       = ["packet_ssh_key.cluser_key"]
 }
 
 resource "packet_ip_attachment" "kubernetes_lb_block" {

@@ -15,6 +15,3 @@ terraform apply -var user="$USER" -var gcp_project="$GCP_PROJ" -auto-approve "$P
 
 # Update conf/kube.conf
 gcloud container clusters get-credentials $(terraform output name) --zone $(terraform output zone)
-
-# Output files of this job
-#cp "$PREFIX"/creds/id_ecdsa* conf/

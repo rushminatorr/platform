@@ -1,7 +1,3 @@
-variable "auth_token" {
-  description = "Your Packet API key"
-  default = "3AsLFHuDRkUKt9xTEuZpmoh1LGhxiKur"
-}
 
 variable "project_id" {
   default = "880125b9-d7b6-43c3-99f5-abd1af3ce879"
@@ -57,10 +53,6 @@ variable "configure_ingress" {
    default     = "no"
 }
 
-variable "user"{
+variable "user" {
   default = "root"
-}
-variable "agent_port" {
-    type = "string"
-    default = "5555"
 }

@@ -32,7 +32,7 @@ helm install "$HELM"/iofog-k8s --set-string controller.token="$TOKEN"
 # Agents
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
 "$SCRIPT"/add-agent-hosts.bash $(cat conf/agents.conf)
-echo "$OS"
+
 if [ "$OS" == "darwin" ]; then
 	sed -i '' -e "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
 else
