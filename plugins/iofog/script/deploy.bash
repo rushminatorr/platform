@@ -3,7 +3,6 @@
 set -e
 
 OS=$(uname -s | tr A-Z a-z)
-HELM=plugins/iofog/helm
 SCRIPT=plugins/iofog/script
 ANSIBLE=plugins/iofog/ansible
 export KUBECONFIG=conf/kube.conf
@@ -17,17 +16,18 @@ kubectl create serviceaccount --namespace kube-system tiller
 kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 kubectl rollout status --watch deployment/tiller-deploy -n kube-system
+helm repo add iofog https://eclipse-iofog.github.io/helm
 
 # ioFog core on Kubernetes
 kubectl create namespace iofog
-helm install "$HELM"/iofog
+helm install iofog/iofog
 echo "Waiting for Controller Pod..."
 "$SCRIPT"/wait-for-pods.bash iofog name=controller
 echo "Waiting for Controller LoadBalancer IP..."
 IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
 PORT=51121
 TOKEN=$("$SCRIPT"/get-controller-token.bash "$IP" "$PORT")
-helm install "$HELM"/iofog-k8s --set-string controller.token="$TOKEN"
+helm install iofog/iofog-k8s --set-string controller.token="$TOKEN"
 
 # Agents
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
