@@ -2,8 +2,11 @@
 
 #plugins/weather/script/wait-for-pods.bash iofog app=weather-demo
 PORT=5555
-HOSTS=$(cat conf/agents.conf)
-for HOST in "${HOSTS[@]}"
+while IFS= read -r HOST
 do
+    echo ""
+    echo "Testing Host: $HOST"
+    echo ""
     curl http://"${HOST##*@}":"$PORT" --connect-timeout 10
-done
+    echo ""
+done < conf/agents.conf

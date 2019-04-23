@@ -18,4 +18,7 @@ spec:
       ports:
         - internal: 80
           external: 5555
+      env:
+          - key: "ENV_VAR1"
+            value: "value1"
   replicas: 2
