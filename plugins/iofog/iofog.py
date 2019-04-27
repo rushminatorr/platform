@@ -19,11 +19,13 @@ def up(**kwargs):
     if 'help' in kwargs:
         print 'Default arguments:'
         print '--bootstrap=false'
+        print '--local=false'
         return
 
     # Default args
     args = {}
     args['bootstrap'] = False
+    args['local'] = False
 
     # Parse input args
     for key, val in kwargs.items():
@@ -31,13 +33,33 @@ def up(**kwargs):
 
     if args['bootstrap']:
         cmd('plugins/iofog/script/bootstrap.bash')
-    cmd('plugins/iofog/script/deploy.bash')
+    
+    if args['local']:
+        cmd('plugins/iofog/script/deploy-local.bash')
+    else:
+        cmd('plugins/iofog/script/deploy.bash')
 
-def down():
-    cmd('plugins/iofog/script/destroy.bash')
+def down(**kwargs):
+    if 'help' in kwargs:
+        print 'Default arguments:'
+        print '--local=false'
+        return
+
+    # Default args
+    args = {}
+    args['local'] = False
+
+    # Parse input args
+    for key, val in kwargs.items():
+        args[key] = str2bool(val)
+
+    if args['local']:
+        cmd('docker-compose -f plugins/iofog/local/docker-compose.yml down')
+    else:
+        cmd('plugins/iofog/script/destroy.bash')
 
 def test():
-    cmd('kubectl get pods -n iofog')
+    cmd('plugins/iofog/test/run.bash')
 
 def describe():
     os.environ['KUBECONFIG'] = 'conf/kube.conf'

@@ -10,4 +10,4 @@ terraform init "$PREFIX"/terraform/edge
 terraform apply -var user="$USER" -var gcp_project="$GCP_PROJ" -auto-approve "$PREFIX"/terraform/edge
 
 # Output files of this job
-terraform output agents | tr -d ',' > conf/agents.conf 
+terraform output agents | tr -d ',' > conf/agents.conf

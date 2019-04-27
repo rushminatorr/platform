@@ -2,8 +2,8 @@
 ansible_connection=ssh
 ansible_ssh_private_key_file=conf/id_ecdsa
 ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
-controller_ip=35.244.102.103
+controller_ip=35.244.98.148
 
 [iofog-agent]
-serge@34.66.28.95
-serge@35.238.134.50
+serge@104.154.119.97
+serge@35.226.81.85

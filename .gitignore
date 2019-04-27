@@ -6,3 +6,5 @@
 *.pyc
 
 .idea/
+
+id_ecdsa*

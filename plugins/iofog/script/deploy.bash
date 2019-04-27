@@ -17,6 +17,7 @@ kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admi
 kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 kubectl rollout status --watch deployment/tiller-deploy -n kube-system
 helm repo add iofog https://eclipse-iofog.github.io/helm
+helm repo update iofog
 
 # ioFog core on Kubernetes
 kubectl create namespace iofog
@@ -39,3 +40,10 @@ else
 	sed -i "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
 fi
 ANSIBLE_CONFIG="$ANSIBLE" ansible-playbook -i "$ANSIBLE"/hosts "$ANSIBLE"/iofog-agent.yml
+
+# Update conf/controller.conf
+echo "$CTRL_IP":51121 > conf/controller.conf
+
+# Update conf/connector.conf
+CNCT_IP=$("$SCRIPT"/wait-for-lb.bash iofog connector)
+echo "$CNCT_IP":8080 > conf/connector.conf
