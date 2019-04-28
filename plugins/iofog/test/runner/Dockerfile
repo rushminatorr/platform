@@ -17,6 +17,7 @@ RUN git clone https://github.com/sstephenson/bats.git && cd bats && ./install.sh
 RUN pip install pyresttest jsonschema future shyaml
 
 # Copy over all the files we need
+COPY functions.bash /
 COPY run.bash /
 COPY tests /tests/
 COPY conf /conf/

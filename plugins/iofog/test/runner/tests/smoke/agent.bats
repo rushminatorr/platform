@@ -1,44 +1,45 @@
 #!/usr/bin/env bats
 
-CONTAINER_ID=$(docker ps | grep iofog-agent | awk '{print $1}')
-PREFIX_CMD="docker exec ${CONTAINER_ID}"
+. tests/functions.bash
 
-@test "iofog-agent status" {
-  result="$(${PREFIX_CMD} iofog-agent status)"
-  [[ ${result} -eq 4 ]]
+importAgents
+
+@test "Integration SHH Into Agents Checking" {
+  RESULT=$(forAgents "iofog-agent status" 4)
+  [[ "$RESULT" -eq 4 ]]
 }
 
 @test "iofog-agent network_interface" {
-  result="$(${PREFIX_CMD} nano /etc/iofog-agent/config.xml | grep '<network_interface>dynamic</network_interface>' )"
-  [[ "${result}" == *'dynamic'* ]]
+  RESULT=$(forAgents "cat /etc/iofog-agent/config.xml | grep '<network_interface>dynamic</network_interface>'" "dynamic")
+  [[ "$RESULT" = "dynamic" ]]
 }
 
 @test "iofog-agent version" {
-  result="$(${PREFIX_CMD} iofog-agent version)"
-  [[ "${result}" == *'1.0.'* ]]
+  RESULT=$(forAgents "iofog-agent version" "1.0")
+  [[ "$RESULT" = "1.0" ]]
 }
 
 @test "iofog-agent info" {
-  result="$(${PREFIX_CMD} iofog-agent info )"
-  [[ "${result}" == *'Iofog UUID'* ]]
+  RESULT=$(forAgents "iofog-agent info" "Iofog UUID")
+  [[ "$RESULT" = "Iofog UUID" ]]
 }
 
 @test "iofog-agent provision BAD" {
-  result="$(${PREFIX_CMD} iofog-agent provision 'asd')"
-  [[ "${result}" == *'Invalid Provisioning Key'* ]]
+  RESULT=$(forAgents "iofog-agent provision asd" "Invalid Provisioning Key")
+  [[ "$RESULT" = "Invalid Provisioning Key" ]]
 }
 
 @test "iofog-agent config INVALID RAM" {
-  result="$(${PREFIX_CMD} iofog-agent config -m 50)"
-  [[ "${result}" == *'Memory limit range'* ]]
+  RESULT=$(forAgents "iofog-agent config -m 50" "Memory limit range")
+  [[ "$RESULT" = "Memory limit range" ]]
 }
 
 @test "iofog-agent config RAM string" {
-  result="$(${PREFIX_CMD} iofog-agent config -m test)"
-  [[ "${result}" == *'invalid value'* ]]
+  RESULT=$(forAgents "iofog-agent config -m test" "invalid value")
+  [[ "$RESULT" = "invalid value" ]]
 }
 
 @test "iofog-agent config VALID RAM" {
-  result="$(${PREFIX_CMD} iofog-agent config -m 80)"
-  [[ "${result}" == *'New Value'* ]]
+  RESULT=$(forAgents "iofog-agent config -m 80" "New Value")
+  [[ "$RESULT" = "New Value" ]]
 }
