@@ -1,6 +1,6 @@
 # Packet Infrastructure Plugin
 
-![img not found](https://raw.githubusercontent.com/eclipse-iofog/spin/develop/plugins/packet/topology.png)
+![img not found](https://raw.githubusercontent.com/eclipse-iofog/platform/develop/plugins/packet/topology.png)
 
 ## Bootstrap
 

@@ -1,6 +1,6 @@
 # GCP Infrastructure Plugin
 
-![img not found](https://raw.githubusercontent.com/eclipse-iofog/spin/develop/plugins/gcp/topology.png)
+![img not found](https://raw.githubusercontent.com/eclipse-iofog/platform/develop/plugins/gcp/topology.png)
 
 ## Bootstrap
 

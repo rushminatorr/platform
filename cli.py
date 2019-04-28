@@ -7,10 +7,10 @@ def subdirs(dir):
   return [dir + '/' + name for name in os.listdir(dir)
     if os.path.isdir(os.path.join(dir, name))]
 
-plugin_base = PluginBase(package='spin.plugins')
+plugin_base = PluginBase(package='cli.plugins')
 plugin_source = plugin_base.make_plugin_source(searchpath=subdirs('plugins'))
 
-class spin(object):
+class cli(object):
   """Class for spinning up infrastructure, platforms, and services"""
 
   def list(self):
@@ -44,4 +44,4 @@ class spin(object):
     plug.describe()
 
 if __name__ == '__main__':
-  fire.Fire(spin)
+  fire.Fire(cli)

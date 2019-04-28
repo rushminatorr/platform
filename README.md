@@ -1,8 +1,12 @@
-# Spin
+# ioFog Platform
 
-Spin is an orchestration utility. It is designed to deploy any infrastructure, platforms, and services that are exposed as plugins. 
+ioFog Platform provides a means by which to orchestrate and test ioFog deployments on various infrastructure.
 
-![img not found](https://raw.githubusercontent.com/eclipse-iofog/spin/develop/spin.png)
+## iofog CLI
+
+Automation of ioFog Platform is handled through the ioFog CLI. The CLI consumes a number of plugins for the deployment infrastructure and services.
+
+![img not found](https://raw.githubusercontent.com/eclipse-iofog/platform/develop/cli.png)
 
 To create a plugin, you must implement a Python module in the plugins folder.
 
@@ -17,24 +21,24 @@ Each plugin must provide a README.md as to its required inputs and expected outp
 The following is an example of how you can bootstrap, deploy, and test an entire infrastructure, platform and service deployment:
 ```
 # Infrastructure
-python spin.py up gcp --bootstrap=true
-python spin.py test gcp
+python cli.py up gcp --bootstrap=true
+python cli.py test gcp
 
 # Platform
-python spin.py up iofog --bootstrap=true
-python spin.py test iofog
+python cli.py up iofog --bootstrap=true
+python cli.py test iofog
 
 # Service
-python spin.py up weather --bootstrap=true
-python spin.py test weather
+python cli.py up weather --bootstrap=true
+python cli.py test weather
 
 # Check status / info
-python spin.py describe weather
-python spin.py describe iofog
-python spin.py describe gcp
+python cli.py describe weather
+python cli.py describe iofog
+python cli.py describe gcp
 
 # Clean up
-python spin.py down weather
-python spin.py down iofog
-python spin.py down gcp
+python cli.py down weather
+python cli.py down iofog
+python cli.py down gcp
 ```

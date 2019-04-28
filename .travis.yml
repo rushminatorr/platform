@@ -18,9 +18,9 @@ jobs:
       script:
       - |
         printenv GCP_SVC_ACC > plugins/gcp/creds/svcacc.json &&
-        python spin.py up gcp --bootstrap=true &&
-        python spin.py up iofog --bootstrap=true &&
-        python spin.py up weather &&
-        python spin.py test weather
+        python cli.py up gcp --bootstrap=true &&
+        python cli.py up iofog --bootstrap=true &&
+        python cli.py up weather &&
+        python cli.py test weather
       after_script:
-        - python spin.py down gcp
+        - python cli.py down gcp

@@ -1,6 +1,6 @@
 # ioFog Platform Plugin
 
-![img not found](https://raw.githubusercontent.com/eclipse-iofog/spin/develop/plugins/iofog/artefacts.png)
+![img not found](https://raw.githubusercontent.com/eclipse-iofog/platform/develop/plugins/iofog/artefacts.png)
 
 ## Bootstrap
 
