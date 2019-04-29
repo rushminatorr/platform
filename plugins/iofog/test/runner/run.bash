@@ -6,7 +6,7 @@
 CONTROLLER=$(cat conf/controller.conf | tr -d '\n')
 CONNECTOR=$(cat conf/connector.conf | tr -d '\n')
 importAgents
-echo "---------- CONFIGURATION ----------
+echo "----------   CONFIGURATION   ----------
 [CONTROLLER]
 $CONTROLLER
 
@@ -15,7 +15,7 @@ $CONNECTOR
 
 [AGENTS]
 ${AGENTS[@]}
----------- ------------- ----------"
+"
 
 # Wait until services are up
 for HOST in http://"$CONTROLLER" http://"$CONNECTOR"; do
@@ -27,13 +27,17 @@ for AGENT in "${AGENTS[@]}"; do
   echo "SSH into $AGENT"
   ssh -i conf/id_ecdsa -o StrictHostKeyChecking=no "$AGENT" echo "Successfully connected to $AGENT via SSH"
 done
+echo "---------- ----------------- ----------
+"
 
-echo "Beginning Smoke Tests.."
+echo "----------    SMOKE TESTS    ----------"
 pyresttest http://"$CONTROLLER" tests/smoke/controller.yml
 pyresttest http://"$CONNECTOR" tests/smoke/connector.yml
 tests/smoke/agent.bats
-echo "Smoke Tests Complete"
+echo "---------- ----------------- ----------
+"
 
-echo "Beginning Integration Tests"
+echo "---------- INTEGRATION TESTS ----------"
 tests/integration/integration.bats
-echo "Integration Tests Complete"
+echo "---------- ----------------- ----------
+"

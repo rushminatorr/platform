@@ -44,7 +44,7 @@
       - headers: {'Content-Type': 'application/json'}
       - body: '{"firstName":"Serge","lastName":"Radinovich","email":"serge@edgeworx.io","password":"123pwer89iu23409i"}'
       - method: "POST"
-      - expected_status: [201]
+      - expected_status: [201, 400]
 
 - test:
       - name: "Login"
