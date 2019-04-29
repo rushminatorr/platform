@@ -17,7 +17,7 @@ $CONNECTOR
 ${AGENTS[@]}
 ---------- ------------- ----------"
 
-# Wait until Controller has come up
+# Wait until services are up
 for HOST in http://"$CONTROLLER" http://"$CONNECTOR"; do
   waitFor "$HOST"
 done
@@ -32,8 +32,8 @@ echo "Beginning Smoke Tests.."
 pyresttest http://"$CONTROLLER" tests/smoke/controller.yml
 pyresttest http://"$CONNECTOR" tests/smoke/connector.yml
 tests/smoke/agent.bats
-
-echo "Test Runner Smoke tests Complete"
+echo "Smoke Tests Complete"
 
 echo "Beginning Integration Tests"
 tests/integration/integration.bats
+echo "Integration Tests Complete"

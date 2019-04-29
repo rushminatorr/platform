@@ -2,16 +2,20 @@
 
 . ../functions.bash
 
-function forAgents(){
+function forAgentsOutputContains(){
     CMD="$1"
-    EXPECT="$2"
+    SUBSTR="$2"
     for AGENT in "${AGENTS[@]}"; do
         RESULT=$(ssh -i conf/id_ecdsa -o StrictHostKeyChecking=no "$AGENT" "$CMD")
-        if [[ "$RESULT" -ne "$EXPECT" ]]; then
-            return "$RESULT"
-        fi
+        [[ "$RESULT" == *"$SUBSTR"* ]]
     done
-    return "$EXPECT"
+}
+
+function forAgents(){
+    CMD="$1"
+    for AGENT in "${AGENTS[@]}"; do
+        ssh -i conf/id_ecdsa -o StrictHostKeyChecking=no "$AGENT" "$CMD"
+    done
 }
 
 # Import our config stuff, so we aren't hardcoding the variables we're testing for. Add to this if more tests are needed

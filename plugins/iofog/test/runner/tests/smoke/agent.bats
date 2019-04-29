@@ -4,42 +4,38 @@
 
 importAgents
 
-@test "Integration SHH Into Agents Checking" {
-  RESULT=$(forAgents "iofog-agent status" 4)
-  [[ "$RESULT" -eq 4 ]]
+@test "Checking SSH Connection" {
+  forAgents "echo Connected"
 }
 
-@test "iofog-agent network_interface" {
-  RESULT=$(forAgents "cat /etc/iofog-agent/config.xml | grep '<network_interface>dynamic</network_interface>'" "dynamic")
-  [[ "$RESULT" = "dynamic" ]]
+@test "Checking Agents Statuses" {
+  forAgents "iofog-agent status"
+}
+
+@test "Checking Agents Network Interface Config" {
+  forAgentsOutputContains "cat /etc/iofog-agent/config.xml | grep '<network_interface>'" "eth0"
 }
 
 @test "iofog-agent version" {
-  RESULT=$(forAgents "iofog-agent version" "1.0")
-  [[ "$RESULT" = "1.0" ]]
+  forAgentsOutputContains "iofog-agent version" "1.0"
 }
 
 @test "iofog-agent info" {
-  RESULT=$(forAgents "iofog-agent info" "Iofog UUID")
-  [[ "$RESULT" = "Iofog UUID" ]]
+  forAgentsOutputContains "iofog-agent info" "Iofog UUID"
 }
 
 @test "iofog-agent provision BAD" {
-  RESULT=$(forAgents "iofog-agent provision asd" "Invalid Provisioning Key")
-  [[ "$RESULT" = "Invalid Provisioning Key" ]]
+  forAgentsOutputContains "iofog-agent provision asd" "Invalid Provisioning Key"
 }
 
 @test "iofog-agent config INVALID RAM" {
-  RESULT=$(forAgents "iofog-agent config -m 50" "Memory limit range")
-  [[ "$RESULT" = "Memory limit range" ]]
+  forAgentsOutputContains "iofog-agent config -m 50" "Memory limit range"
 }
 
 @test "iofog-agent config RAM string" {
-  RESULT=$(forAgents "iofog-agent config -m test" "invalid value")
-  [[ "$RESULT" = "invalid value" ]]
+  forAgentsOutputContains "iofog-agent config -m test" "invalid value"
 }
 
 @test "iofog-agent config VALID RAM" {
-  RESULT=$(forAgents "iofog-agent config -m 80" "New Value")
-  [[ "$RESULT" = "New Value" ]]
+  forAgentsOutputContains "iofog-agent config -m 1024" "New Value"
 }
