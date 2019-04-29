@@ -10,10 +10,20 @@ importAgents
   forAgents "echo Connected"
 }
 
-# Test that Volumes have been mapped across correctly
-#@test "Integration Volume Checking" {
-#    forAgents "test -f FILENAME"
-#}
+# Test that the SSH connection to Agents is Valid
+@test "Integration Test UUID is Available" {
+  forAgentsOutputContains "iofog-agent info | grep UUID" "UUID"
+}
+
+# Test that the SSH connection to Agents is Valid
+@test "Integration Test Connection to Controller" {
+  forAgentsOutputContains "iofog-agent status | grep Connection to Controller" "ok"
+}
+
+#Test that Volumes have been mapped across correctly
+@test "Integration Volume Checking" {
+    forAgents "test -f /usr/"
+}
 
 #@test "Integration Port Checking" {
 #    forAgents "telnet localhost $PORTS"
