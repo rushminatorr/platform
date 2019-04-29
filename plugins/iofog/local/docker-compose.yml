@@ -26,6 +26,8 @@ services:
         environment:
             - NODE_ENV=development
         network_mode: "bridge"
+        external_links:
+            - iofog-connector
     
     # ioFog Agent, depends on Connector and Controller
     iofog-agent:
@@ -40,3 +42,5 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
         network_mode: "bridge"
+        external_links: 
+            - iofog-controller
