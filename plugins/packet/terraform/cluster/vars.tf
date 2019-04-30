@@ -1,6 +1,6 @@
 
 variable "project_id" {
-  default = "880125b9-d7b6-43c3-99f5-abd1af3ce879"
+  default = ""
 }
 
 variable "facility" {

@@ -1,5 +1,5 @@
 resource "packet_ssh_key" "edge_key" {
-  name       = "automationkey"
+  name       = "edgekey"
   public_key = "${file("plugins/packet/creds/id_ecdsa.pub")}"
 }
 

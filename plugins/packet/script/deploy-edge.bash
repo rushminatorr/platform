@@ -7,7 +7,7 @@ PREFIX=plugins/packet
 
 # Deploy infrastructure
 terraform init "$PREFIX"/terraform/edge
-terraform apply -var gcp_project="$PKT_PROJ" -auto-approve "$PREFIX"/terraform/edge
+terraform apply -var project_id="$PKT_PROJ" -auto-approve "$PREFIX"/terraform/edge
 
 # Output files of this job
 terraform output agents | tr -d ',' > conf/agents.conf 

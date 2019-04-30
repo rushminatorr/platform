@@ -12,9 +12,9 @@ data "template_file" "controller" {
   }
 }
 
-resource "packet_ssh_key" "cluser_key" {
-  name       = "automationkey"
-  public_key = "${file("plugins/packet/creds/id_ecdsa.pub")}"
+resource "packet_ssh_key" "cluster_key" {
+  name       = "clusterkey"
+  public_key = "${file("plugins/packet/creds/id_ecdsa_cluster.pub")}"
 }
 
 resource "packet_device" "k8s_primary" {
@@ -26,7 +26,7 @@ resource "packet_device" "k8s_primary" {
 
   billing_cycle = "hourly"
   project_id = "${var.project_id}"
-  depends_on       = ["packet_ssh_key.cluser_key"]
+  depends_on       = ["packet_ssh_key.cluster_key"]
 }
 
 resource "packet_ip_attachment" "kubernetes_lb_block" {
