@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
-RUNNER=plugins/iofog/test/runner
-# Setup config folder
-cp conf/* "$RUNNER"/conf 
+PREFIX=plugins/iofog/test/docker-compose
+SUFFIX=.yml
+if [ "local" = $(cat .iofog.state) ] ; then
+    SUFFIX=-local.yml
+fi
+COMPOSE="$PREFIX""$SUFFIX"
 
 # Launch test runner
-docker-compose -f "$RUNNER"/docker-compose.yml  up \
+docker-compose -f "$COMPOSE" pull test-runner
+docker-compose -f "$COMPOSE" up \
     --build \
     --abort-on-container-exit \
-    --exit-code-from test-runner
+    --exit-code-from test-runner \
+    --force-recreate \
+    --renew-anon-volumes
 
-docker-compose -f "$RUNNER"/docker-compose.yml down
+docker-compose -f "$COMPOSE" down -v

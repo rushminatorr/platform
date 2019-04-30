@@ -34,29 +34,29 @@ def up(**kwargs):
     if args['bootstrap']:
         cmd('plugins/iofog/script/bootstrap.bash')
     
+    state = 'remote' 
     if args['local']:
+        state = 'local'
         cmd('plugins/iofog/script/deploy-local.bash')
     else:
         cmd('plugins/iofog/script/deploy.bash')
+    
+    # Record state of deployment
+    f = open('.iofog.state', 'w')
+    f.write(state)
+    f.close()
 
 def down(**kwargs):
-    if 'help' in kwargs:
-        print 'Default arguments:'
-        print '--local=false'
-        return
+    # Read state of deployment
+    f = open('.iofog.state', 'r')
+    state = f.read()
 
-    # Default args
-    args = {}
-    args['local'] = False
-
-    # Parse input args
-    for key, val in kwargs.items():
-        args[key] = str2bool(val)
-
-    if args['local']:
+    if state == "local":
         cmd('docker-compose -f plugins/iofog/local/docker-compose.yml down')
-    else:
+    elif state == "remote":
         cmd('plugins/iofog/script/destroy.bash')
+    else:
+        raise Exception('.iofog.state file corrupted')
 
 def test():
     cmd('plugins/iofog/test/run.bash')

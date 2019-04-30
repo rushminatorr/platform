@@ -1,0 +1,10 @@
+version: "3"
+services:
+    test-runner:
+        image: iofog/test-runner-develop:latest
+        container_name: test-runner
+        network_mode: "bridge"
+        volumes:
+            - ../../../conf:/conf
+volumes:
+  conf:
