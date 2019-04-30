@@ -20,6 +20,7 @@ jobs:
         printenv GCP_SVC_ACC > plugins/gcp/creds/svcacc.json &&
         python cli.py up gcp --bootstrap=true &&
         python cli.py up iofog --bootstrap=true &&
+        python cli.py test iofog &&
         python cli.py up weather &&
         python cli.py test weather
       after_script:
