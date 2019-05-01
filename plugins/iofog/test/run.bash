@@ -8,12 +8,15 @@ fi
 COMPOSE="$PREFIX""$SUFFIX"
 
 # Launch test runner
-docker-compose -f "$COMPOSE" pull test-runner
+ERR=0
+docker-compose -f "$COMPOSE" pull test-runner ; (( ERR |= "$?" ))
 docker-compose -f "$COMPOSE" up \
     --build \
     --abort-on-container-exit \
     --exit-code-from test-runner \
     --force-recreate \
-    --renew-anon-volumes
+    --renew-anon-volumes ; (( ERR |= "$?" ))
 
 docker-compose -f "$COMPOSE" down -v
+
+exit "$ERR"
