@@ -1,5 +1,14 @@
 import subprocess
 import os
+import yaml
+
+def exportImages():
+    """Read image config and export env vars"""
+    with open("plugins/iofog/config.yml", 'r') as stream:
+        images = ['controller', 'connector', 'operator', 'scheduler', 'kubelet']
+        conf = yaml.safe_load(stream)
+        for image in images:
+            os.environ[image.upper() + "_IMG"] = conf['images'][image]
 
 def cmd(cmd_str):
     """Execute shell commands"""
@@ -34,17 +43,21 @@ def up(**kwargs):
     if args['bootstrap']:
         cmd('plugins/iofog/script/bootstrap.bash')
     
+    # Record state of deployment
+    f = open('.iofog.state', 'w')
     state = 'remote' 
     if args['local']:
         state = 'local'
+        f.write(state)
+        f.close()
         cmd('plugins/iofog/script/deploy-local.bash')
     else:
+        f.write(state)
+        f.close()
+        # TODO: (Serge) Integrate images.yml with local deployment once CI builds Docker images
+        exportImages()
         cmd('plugins/iofog/script/deploy.bash')
     
-    # Record state of deployment
-    f = open('.iofog.state', 'w')
-    f.write(state)
-    f.close()
 
 def down(**kwargs):
     # Read state of deployment

@@ -21,14 +21,24 @@ helm repo update iofog
 
 # ioFog core on Kubernetes
 kubectl create namespace iofog
-helm install iofog/iofog
+
+helm install iofog/iofog --set-string \
+controller.image="$CONTROLLER_IMG",\
+connector.image="$CONNECTOR_IMG"
+
 echo "Waiting for Controller Pod..."
 "$SCRIPT"/wait-for-pods.bash iofog name=controller
+
 echo "Waiting for Controller LoadBalancer IP..."
 IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
 PORT=51121
 TOKEN=$("$SCRIPT"/get-controller-token.bash "$IP" "$PORT")
-helm install iofog/iofog-k8s --set-string controller.token="$TOKEN"
+
+helm install iofog/iofog-k8s --set-string \
+controller.token="$TOKEN",\
+scheduler.image="$SCHEDULER_IMG",\
+operator.image="$OPERATOR_IMG",\
+kubelet.image="$KUBELET_IMG"
 
 # Agents
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)

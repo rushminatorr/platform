@@ -1,0 +1,6 @@
+images:
+  controller: "edgeworx/controller-k8s:latest"
+  connector: "iofog/connector:dev"
+  scheduler: "iofog/iofog-scheduler:develop"
+  operator: "iofog/iofog-operator:develop"
+  kubelet: "iofog/iofog-kubelet:develop"
