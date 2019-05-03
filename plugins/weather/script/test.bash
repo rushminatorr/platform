@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 plugins/weather/script/wait-for-pods.bash iofog app=weather-demo
 PORT=5555
 while IFS= read -r HOST
