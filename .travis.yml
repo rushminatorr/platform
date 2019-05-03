@@ -22,6 +22,7 @@ jobs:
         python cli.py up iofog --bootstrap=true &&
         python cli.py up weather &&
         python cli.py test weather &&
+        python cli.py down weather &&
         python cli.py test iofog
       after_script:
         - python cli.py down gcp
