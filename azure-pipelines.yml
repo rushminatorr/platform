@@ -11,7 +11,9 @@ steps:
     versionSpec: '2.7'
     architecture: 'x64'
 
-- script: pip install -r requirements.txt
+- script: |
+    pip install --upgrade pip
+    pip install -r requirements.txt
   displayName: 'Install Python requirements'
 
 #- script: |
@@ -25,11 +27,12 @@ steps:
   displayName: 'Deploy GCP Cluster and Agents'
 
 - script: |
-    sed -i 's/controller\:.*/controller: "$(images.controller)"/g' plugins/iofog/config.yml
-    sed -i 's/connector\:.*/connector: "$(images.connector)"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/scheduler: "$(images.scheduler)"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/operator: "$(images.operator)"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/kubelet: "$(images.kubelet)"/g' plugins/iofog/config.yml
+    sed -i 's/controller\:.*/controller: "'$(images.controller)'"/g' plugins/iofog/config.yml
+    sed -i 's/connector\:.*/connector: "'$(images.connector)'"/g' plugins/iofog/config.yml
+    sed -i 's/scheduler\:.*/scheduler: "'$(images.scheduler)'"/g' plugins/iofog/config.yml
+    sed -i 's/scheduler\:.*/operator: "'$(images.operator)'"/g' plugins/iofog/config.yml
+    sed -i 's/scheduler\:.*/kubelet: "'$(images.kubelet)'"/g' plugins/iofog/config.yml
+    cat plugins/iofog/config.yml
   displayName: 'Set ioFog images'
 
 - script: |
@@ -37,8 +40,13 @@ steps:
   displayName: 'Deploy ioFog Kubernetes and ioFog Agents'
 
 - script: |
+    python cli.py up weather
+    python cli.py test weather
+  displayName: 'Test Kubernetes APIs'
+
+- script: |
     python cli.py test iofog
-  displayName: 'Test ioFog'
+  displayName: 'Test ioFog APIs'
 
 - script: |
     python cli.py down gcp

@@ -27,4 +27,4 @@ else
 fi
 
 # Ansible
-sudo pip install ansible
+pip install ansible==2.7.9
