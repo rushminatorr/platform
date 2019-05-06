@@ -26,12 +26,13 @@ steps:
     python cli.py up gcp --bootstrap=true
   displayName: 'Deploy GCP Cluster and Agents'
 
+steps:
 - script: |
-    sed -i 's/controller\:.*/controller: "'$(images.controller)'"/g' plugins/iofog/config.yml
-    sed -i 's/connector\:.*/connector: "'$(images.connector)'"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/scheduler: "'$(images.scheduler)'"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/operator: "'$(images.operator)'"/g' plugins/iofog/config.yml
-    sed -i 's/scheduler\:.*/kubelet: "'$(images.kubelet)'"/g' plugins/iofog/config.yml
+    sed -i "s|controller\:.*|controller: \"$(images.controller)\"|g" plugins/iofog/config.yml
+    sed -i "s|connector\:.*|connector: \"$(images.connector)\"|g" plugins/iofog/config.yml
+    sed -i "s|scheduler\:.*|scheduler: \"$(images.scheduler)\"|g" plugins/iofog/config.yml
+    sed -i "s|scheduler\:.*|operator: \"$(images.operator)\"|g" plugins/iofog/config.yml
+    sed -i "s|scheduler\:.*|kubelet: \"$(images.kubelet)\"|g" plugins/iofog/config.yml
     cat plugins/iofog/config.yml
   displayName: 'Set ioFog images'
 
