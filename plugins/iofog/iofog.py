@@ -72,6 +72,23 @@ def down(**kwargs):
         raise Exception('.iofog.state file corrupted')
 
 def test():
+    # Read config to determine Test Runner image
+    runner = ''
+    with open('plugins/iofog/config.yml', 'r') as f:
+        conf = yaml.safe_load(f)
+        runner = conf['images']['runner']
+    
+    # Update docker-compose files to use Test Runner image
+    compose_filenames = [ 'docker-compose.yml', 'docker-compose-local.yml' ]
+    for file_name in compose_filenames:
+        dir = 'plugins/iofog/test/'
+        compose = dict()
+        with open(dir + file_name, 'r') as f:
+            compose = yaml.safe_load(f)
+        compose['services']['test-runner']['image'] = runner
+        with open(dir + file_name, 'w') as f:
+            yaml.dump(compose, f)
+
     cmd('plugins/iofog/test/run.bash')
 
 def describe():

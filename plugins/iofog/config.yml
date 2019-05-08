@@ -4,3 +4,4 @@ images:
   scheduler: "iofog/iofog-scheduler:develop"
   operator: "iofog/iofog-operator:develop"
   kubelet: "iofog/iofog-kubelet:develop"
+  runner: "iofog/test-runner-develop:latest"

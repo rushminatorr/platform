@@ -1,10 +1,10 @@
-version: "3"
 services:
-    test-runner:
-        image: iofog/test-runner-develop:latest
-        container_name: test-runner
-        network_mode: "bridge"
-        volumes:
-            - ../../../conf:/conf
+  test-runner:
+    container_name: test-runner
+    image: iofog/test-runner-develop:latest
+    network_mode: bridge
+    volumes:
+    - ../../../conf:/conf
+version: '3'
 volumes:
-  conf:
+  conf: null

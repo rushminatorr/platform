@@ -21,10 +21,8 @@ steps:
 #  displayName: 'Deploy ioFog locally'
 
 - script: |
-    echo $(gcp.svc) > plugins/gcp/creds/svcacc.json
-    cat plugins/gcp/creds/svcacc.json
-    python cli.py up gcp --bootstrap=true
-  displayName: 'Deploy GCP Cluster and Agents'
+    echo $(gcp.svcacc) | docker login -u _json_key --password-stdin https://gcr.io
+  displayName: 'Docker connect to Registry'
 
 - script: |
     sed -i "s|controller\:.*|controller: \"$(images.controller)\"|g" plugins/iofog/config.yml
@@ -32,8 +30,15 @@ steps:
     sed -i "s|scheduler\:.*|scheduler: \"$(images.scheduler)\"|g" plugins/iofog/config.yml
     sed -i "s|operator\:.*|operator: \"$(images.operator)\"|g" plugins/iofog/config.yml
     sed -i "s|kubelet\:.*|kubelet: \"$(images.kubelet)\"|g" plugins/iofog/config.yml
+    sed -i "s|runner\:.*|runner: \"$(images.runner)\"|g" plugins/iofog/config.yml
     cat plugins/iofog/config.yml
   displayName: 'Set ioFog images'
+
+- script: |
+    echo $(gcp.svc) > plugins/gcp/creds/svcacc.json
+    cat plugins/gcp/creds/svcacc.json
+    python cli.py up gcp --bootstrap=true
+  displayName: 'Deploy GCP Cluster and Agents'
 
 - script: |
     python cli.py up iofog --bootstrap=true
