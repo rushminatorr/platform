@@ -33,6 +33,4 @@ if [[ -z $(command -v jq) ]]; then
 fi
 
 # Ansible
-if [[ -z $(command -v ansible) ]]; then
-	pip install ansible==2.7.9
-fi
+pip install ansible==2.7.9
