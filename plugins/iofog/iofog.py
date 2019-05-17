@@ -28,12 +28,14 @@ def up(**kwargs):
     if 'help' in kwargs:
         print 'Default arguments:'
         print '--bootstrap=false'
+        print '--agents=true'
         print '--local=false'
         return
 
     # Default args
     args = {}
     args['bootstrap'] = False
+    args['agents'] = True
     args['local'] = False
 
     # Parse input args
@@ -47,6 +49,8 @@ def up(**kwargs):
     f = open('.iofog.state', 'w')
     state = 'remote' 
     if args['local']:
+        if args['agents'] == False:
+            raise Exception('Cannot deploy locally without agents')
         state = 'local'
         f.write(state)
         f.close()
@@ -54,9 +58,9 @@ def up(**kwargs):
     else:
         f.write(state)
         f.close()
-        # TODO: (Serge) Integrate images.yml with local deployment once CI builds Docker images
+        # TODO: (Serge) Integrate config.yml with local deployment once CI builds Docker images
         exportImages()
-        cmd('plugins/iofog/script/deploy.bash')
+        cmd('plugins/iofog/script/deploy.bash ' + str(args['agents']))
     
 
 def down(**kwargs):

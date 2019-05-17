@@ -2,6 +2,8 @@
 
 set -e
 
+DEPLOY_AGENTS="$1"
+
 OS=$(uname -s | tr A-Z a-z)
 SCRIPT=plugins/iofog/script
 ANSIBLE=plugins/iofog/ansible
@@ -41,15 +43,17 @@ operator.image="$OPERATOR_IMG",\
 kubelet.image="$KUBELET_IMG"
 
 # Agents
-CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
-"$SCRIPT"/add-agent-hosts.bash $(cat conf/agents.conf)
+if [ "$DEPLOY_AGENTS" = "True" ]; then
+	CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
+	"$SCRIPT"/add-agent-hosts.bash $(cat conf/agents.conf)
 
-if [ "$OS" == "darwin" ]; then
-	sed -i '' -e "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
-else
-	sed -i "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
+	if [ "$OS" == "darwin" ]; then
+		sed -i '' -e "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
+	else
+		sed -i "s/controller_ip=.*/controller_ip=$CTRL_IP/g" "$ANSIBLE"/hosts
+	fi
+	ANSIBLE_CONFIG="$ANSIBLE" ansible-playbook -i "$ANSIBLE"/hosts "$ANSIBLE"/iofog-agent.yml
 fi
-ANSIBLE_CONFIG="$ANSIBLE" ansible-playbook -i "$ANSIBLE"/hosts "$ANSIBLE"/iofog-agent.yml
 
 # Update conf/controller.conf
 echo "$CTRL_IP":51121 > conf/controller.conf
