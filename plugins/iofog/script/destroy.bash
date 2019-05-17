@@ -22,7 +22,9 @@ LIST=$(curl --request GET \
     --header "Authorization: $TOKEN" )
 echo "$LIST"
 
-for IDX in 0 1; do
+AGENT_COUNT=$(wc -l conf/agents.conf | awk '{ print $1 }')
+MAX=$((AGENT_COUNT-1))
+for IDX in $(seq 0 "$MAX"); do
     UUID=$(echo "$LIST" | jq -r .fogs["$IDX"].uuid)
     echo "Deleting agent $UUID"
 
