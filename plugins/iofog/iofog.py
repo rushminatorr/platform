@@ -35,7 +35,7 @@ def up(**kwargs):
     # Default args
     args = {}
     args['bootstrap'] = False
-    args['bootstrap-agents'] = True
+    args['bootstrap_agents'] = True
     args['local'] = False
 
     # Parse input args
@@ -60,7 +60,8 @@ def up(**kwargs):
         f.close()
         # TODO: (Serge) Integrate config.yml with local deployment once CI builds Docker images
         exportImages()
-        cmd('plugins/iofog/script/deploy.bash ' + str(args['bootstrap-agents']))
+        bootstrap_agents = "True" if args['bootstrap_agents'] else "False"
+        cmd('plugins/iofog/script/deploy.bash ' + bootstrap_agents)
     
 
 def down(**kwargs):

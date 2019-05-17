@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 SCRIPT=plugins/iofog/script
 
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
@@ -31,16 +33,18 @@ for IDX in 0 1; do
     echo "$DEL"
 done
 
+
 echo 'Waiting for Kubernetes cluster to reconcile with Controller'
-sleep 10
-
 export KUBECONFIG=conf/kube.conf
-helm delete --purge $(helm ls | awk '$9 ~ /iofog/ { print $1 }')
+ITER=0
+until helm delete --purge $(helm ls 2> /dev/null | awk '$9 ~ /iofog/ { print $1 }') &> /dev/null
+do
+    ITER=$((ITER+1))
+    if [[ ITER -gt 20 ]]; then exit 1; fi
+    sleep 5
+done
+
 kubectl delete ns iofog
-
 helm reset
-
 kubectl delete serviceaccount --namespace kube-system tiller
 kubectl delete clusterrolebinding tiller-cluster-rule
-
-# TODO: remove agents?
