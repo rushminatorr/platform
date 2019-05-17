@@ -57,27 +57,3 @@
       register: freq
 
     - debug: var=freq.stdout
-
-    - name: Change Controller URL
-      shell: iofog-agent config -a http://"{{ controller_ip }}":51121/api/v3/
-      register: url
-
-    - debug: var=url
-
-    - name: Copy setup script to Agent
-      copy:
-        src: scripts/setup-agent.sh
-        dest: setup-agent.sh
-        mode: 755
-      register: copy_script
-
-    - debug: var=copy_script
-
-    - name: Run the Agent setup
-      shell: ./setup-agent.sh http://"{{ controller_ip }}":51121/api/v3
-      register: setup
-
-    - debug: var=setup
-
-    - name: Remove hack that allows unauthenticated packages to install
-      file: path=/etc/apt/apt.conf.d/99temp state=absent

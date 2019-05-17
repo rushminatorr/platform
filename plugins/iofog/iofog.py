@@ -28,14 +28,14 @@ def up(**kwargs):
     if 'help' in kwargs:
         print 'Default arguments:'
         print '--bootstrap=false'
-        print '--agents=true'
+        print '--bootstrap-agents=true'
         print '--local=false'
         return
 
     # Default args
     args = {}
     args['bootstrap'] = False
-    args['agents'] = True
+    args['bootstrap-agents'] = True
     args['local'] = False
 
     # Parse input args
@@ -60,7 +60,7 @@ def up(**kwargs):
         f.close()
         # TODO: (Serge) Integrate config.yml with local deployment once CI builds Docker images
         exportImages()
-        cmd('plugins/iofog/script/deploy.bash ' + str(args['agents']))
+        cmd('plugins/iofog/script/deploy.bash ' + str(args['bootstrap-agents']))
     
 
 def down(**kwargs):
