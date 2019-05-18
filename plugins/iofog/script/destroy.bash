@@ -2,6 +2,8 @@
 
 set -e
 
+export KUBECONFIG=conf/kube.conf
+
 SCRIPT=plugins/iofog/script
 
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
@@ -37,7 +39,6 @@ done
 
 
 echo 'Waiting for Kubernetes cluster to reconcile with Controller'
-export KUBECONFIG=conf/kube.conf
 ITER=0
 until helm delete --purge $(helm ls 2> /dev/null | awk '$9 ~ /iofog/ { print $1 }') &> /dev/null
 do

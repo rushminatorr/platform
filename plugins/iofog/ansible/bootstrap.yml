@@ -42,15 +42,24 @@
 
     - debug: var=install
 
-
     # Start iofog agent
     - name: Start iofog Agent
       shell: sudo service iofog-agent start
 
-    # Agent takes a few secs to start completely
-        # Agent takes a few secs to start completely
-    - name: Wait for Agent to complete starting
-      wait_for: timeout=10
+    - name: Copy wait script to Agent
+      copy:
+        src: scripts/wait-for-agent.sh
+        dest: wait-for-agent.sh
+        mode: 755
+      register: copy_script
+
+    - debug: var=copy_script
+
+    - name: Wait for agent
+      shell: ./wait-for-agent.sh
+      register: wait_agent
+
+    - debug: var=wait_agent
 
     - name: Configure Agent frequency
       shell: iofog-agent config -cf 10 -sf 10
