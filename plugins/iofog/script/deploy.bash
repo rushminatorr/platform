@@ -42,8 +42,14 @@ scheduler.image="$SCHEDULER_IMG",\
 operator.image="$OPERATOR_IMG",\
 kubelet.image="$KUBELET_IMG"
 
-# Agents
+
+# Get GKE Controller and Connector IPs and save to config files
 CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
+echo "$CTRL_IP":51121 > conf/controller.conf
+CNCT_IP=$("$SCRIPT"/wait-for-lb.bash iofog connector)
+echo "$CNCT_IP":8080 > conf/connector.conf
+
+# Agents
 "$SCRIPT"/add-agent-hosts.bash $(cat conf/agents.conf)
 
 if [ "$OS" == "darwin" ]; then
@@ -55,10 +61,3 @@ if [ "$BOOTSTRAP_AGENTS" = "True" ]; then
 	ANSIBLE_CONFIG="$ANSIBLE" ansible-playbook -i "$ANSIBLE"/hosts "$ANSIBLE"/bootstrap.yml
 fi
 ANSIBLE_CONFIG="$ANSIBLE" ansible-playbook -i "$ANSIBLE"/hosts "$ANSIBLE"/init.yml
-
-# Update conf/controller.conf
-echo "$CTRL_IP":51121 > conf/controller.conf
-
-# Update conf/connector.conf
-CNCT_IP=$("$SCRIPT"/wait-for-lb.bash iofog connector)
-echo "$CNCT_IP":8080 > conf/connector.conf

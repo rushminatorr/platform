@@ -24,7 +24,7 @@ LIST=$(curl --request GET \
     --header "Authorization: $TOKEN" )
 echo "$LIST"
 
-AGENT_COUNT=$(wc -l conf/agents.conf | awk '{ print $1 }')
+AGENT_COUNT=$(echo "$LIST" | jq '.fogs | length')
 MAX=$((AGENT_COUNT-1))
 for IDX in $(seq 0 "$MAX"); do
     UUID=$(echo "$LIST" | jq -r .fogs["$IDX"].uuid)
