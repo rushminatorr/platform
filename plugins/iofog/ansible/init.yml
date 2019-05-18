@@ -13,6 +13,21 @@
       command: echo "Initializing Agent"
       register: echo
 
+    - name: Copy wait script to Agent
+      copy:
+        src: scripts/wait-for-agent.sh
+        dest: wait-for-agent.sh
+        mode: 755
+      register: copy_script
+
+    - debug: var=copy_script
+
+    - name: Wait for agent
+      shell: ./wait-for-agent.sh
+      register: wait_agent
+
+    - debug: var=wait_agent
+
     - name: Change Controller URL
       shell: iofog-agent config -a http://"{{ controller_ip }}":51121/api/v3/
       register: url
