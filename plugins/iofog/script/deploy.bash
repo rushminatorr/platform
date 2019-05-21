@@ -30,11 +30,20 @@ connector.image="$CONNECTOR_IMG"
 
 echo "Waiting for Controller Pod..."
 "$SCRIPT"/wait-for-pods.bash iofog name=controller
+echo "Waiting for Connector Pod..."
+"$SCRIPT"/wait-for-pods.bash iofog name=connector
 
 echo "Waiting for Controller LoadBalancer IP..."
-IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
-PORT=51121
-TOKEN=$("$SCRIPT"/get-controller-token.bash "$IP" "$PORT")
+CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
+echo "Waiting for Connector LoadBalancer IP..."
+CNCT_IP=$("$SCRIPT"/wait-for-lb.bash iofog connector)
+
+# Configure Controller with Connector IP
+CTRL_POD=$(kubectl get pod -l name=controller -n iofog -o jsonpath="{.items[0].metadata.name}")
+kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n gke -d connector --dev-mode-on -i "$CNCT_IP"
+
+# Get Auth token from Controller
+TOKEN=$("$SCRIPT"/get-controller-token.bash "$CTRL_IP" 51121)
 
 helm install iofog/iofog-k8s --set-string \
 controller.token="$TOKEN",\
@@ -42,11 +51,8 @@ scheduler.image="$SCHEDULER_IMG",\
 operator.image="$OPERATOR_IMG",\
 kubelet.image="$KUBELET_IMG"
 
-
 # Get GKE Controller and Connector IPs and save to config files
-CTRL_IP=$("$SCRIPT"/wait-for-lb.bash iofog controller)
 echo "$CTRL_IP":51121 > conf/controller.conf
-CNCT_IP=$("$SCRIPT"/wait-for-lb.bash iofog connector)
 echo "$CNCT_IP":8080 > conf/connector.conf
 
 # Agents
