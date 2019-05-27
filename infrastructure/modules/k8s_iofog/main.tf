@@ -1,30 +1,51 @@
-resource "kubernetes_service_account" "tiller" {
-  metadata {
-    name      = "tiller"
-    namespace = "kube-system"
-  }
-}
+variable "controller_image"     {}
+variable "connector_image"      {}
+variable "kubelet_image"        {}
+variable "operator_image"       {}
+variable "scheduler_image"      {}
 
-resource "kubernetes_cluster_role_binding" "tiller" {
-    metadata {
-        name = "tiller"
-    }
+resource "null_resource" "iofog" {
 
-    role_ref {
-        api_group = "rbac.authorization.k8s.io"
-        kind      = "ClusterRole"
-        name      = "cluster-admin"
-    }
+    provisioner "local-exec" {
+        command = "./setup.sh"
 
-    # api_group has to be empty because of a bug:
-    # https://github.com/terraform-providers/terraform-provider-kubernetes/issues/204
-    subject {
-        api_group = ""
-        kind      = "ServiceAccount"
-        name      = "tiller"
-        namespace = "kube-system"
+        environment = {
+            SCHEDULER_IMG   = "${var.scheduler_image}"
+            OPERATOR_IMG    = "${var.operator_image}"
+            KUBELET_IMG     = "${var.kubelet_image}"
+            CONTROLLER_IMG  = "${var.controller_image}"
+            CONNECTOR_IMG   = "${var.connector_image}"
+        }
     }
 }
+
+# resource "kubernetes_service_account" "tiller" {
+#   metadata {
+#     name      = "tiller"
+#     namespace = "kube-system"
+#   }
+# }
+
+# resource "kubernetes_cluster_role_binding" "tiller" {
+#     metadata {
+#         name = "tiller"
+#     }
+
+#     role_ref {
+#         api_group = "rbac.authorization.k8s.io"
+#         kind      = "ClusterRole"
+#         name      = "cluster-admin"
+#     }
+
+#     # api_group has to be empty because of a bug:
+#     # https://github.com/terraform-providers/terraform-provider-kubernetes/issues/204
+#     subject {
+#         api_group = ""
+#         kind      = "ServiceAccount"
+#         name      = "tiller"
+#         namespace = "kube-system"
+#     }
+# }
 
 # resource "helm_release" "iofog" {
 #     name       = "iofog"
@@ -40,7 +61,10 @@ resource "kubernetes_cluster_role_binding" "tiller" {
 # EOF
 #     ]
 
-#     depends_on = ["kubernetes_cluster_role_binding.tiller"]
+#     depends_on = [
+#     "kubernetes_cluster_role_binding.tiller",
+#     "kubernetes_service_account.tiller"
+#     ]
 # }
 
 # resource "helm_release" "iofog-k8s" {

@@ -7,6 +7,14 @@ variable "gcp_region"           {}
 variable "gke_name"             {}
 variable "gke_region"           {}
 
+////////////////// Images Iofog ////////////////////
+variable "controller_image"     {}
+variable "connector_image"      {}
+variable "kubelet_image"        {}
+variable "operator_image"       {}
+variable "scheduler_image"      {}
+
+
 provider "google" {
     version                     = "~> 2.7.0"
     project                     = "${var.project_id}"
@@ -18,36 +26,36 @@ provider "google-beta" {
     region                      = "${var.gcp_region}"
 }
 
-provider "helm" {
-    version                     = "~> 0.9.1"
-    kubernetes {
-        load_config_file        = false
-        host                    = "https://${module.kubernetes.endpoint}"
-        token                   = "${data.google_client_config.default.access_token}"
-        cluster_ca_certificate  = "${base64decode(module.kubernetes.ca_certificate)}"
-    }
-}
+# provider "helm" {
+#     version                     = "~> 0.9.1"
+#     kubernetes {
+#         load_config_file        = false
+#         host                    = "https://${module.kubernetes.endpoint}"
+#         token                   = "${data.google_client_config.default.access_token}"
+#         cluster_ca_certificate  = "${base64decode(module.kubernetes.ca_certificate)}"
+#     }
+# }
 
-provider "kubernetes" {
-    version                     = "~> 1.7"
-    load_config_file            = false
-    host                        = "https://${module.kubernetes.endpoint}"
-    token                       = "${data.google_client_config.default.access_token}"
-    cluster_ca_certificate      = "${base64decode(module.kubernetes.ca_certificate)}"
-}
+# provider "kubernetes" {
+#     version                     = "~> 1.7"
+#     load_config_file            = false
+#     host                        = "https://${module.kubernetes.endpoint}"
+#     token                       = "${data.google_client_config.default.access_token}"
+#     cluster_ca_certificate      = "${base64decode(module.kubernetes.ca_certificate)}"
+# }
 
 # provider "packet" {
 #     alias  = "packet"
 #     auth_token = "${var.auth_token}"
 # }
 
-data "google_client_config" "default" {}
+# terraform {
+#     backend "gcs" {
+#         bucket                  = "terraform-state-edgy-dev"
+#     }
+# }
 
-terraform {
-    backend "gcs" {
-        bucket                  = "terraform-state-edgy-dev"
-    }
-}
+# data "google_client_config" "default" {}
 
 resource "google_service_account" "svc_account" {
     project                     = "${var.project_id}"
@@ -85,15 +93,32 @@ module "kubernetes" {
     service_account             = "azure-gcr@focal-freedom-236620.iam.gserviceaccount.com"
 }
 
-module "iofog" {
-    source  = "../modules/k8s_iofog"
+resource "null_resource" "kube_config" {
+    provisioner "local-exec" {
+        command = "gcloud --quiet beta container clusters get-credentials $CLUSTER --region $REGION --project $PROJECT"
+
+        environment = {
+            CLUSTER   = "${var.gke_name}"
+            REGION    = "${var.gke_region}"
+            PROJECT   = "${var.project_id}"
+        }
+    }
+
+    depends_on = [
+        "module.gcp_network",
+        "module.kubernetes"
+    ]
 }
 
-# resource "null_resource" "kube_config" {
-#   provisioner "local-exec" {
-#     command = "gcloud --quiet beta container clusters get-credentials rush --region us-west1 --project focal-freedom-23662 "
-#   }
-# }
+module "iofog" {
+    source  = "../modules/k8s_iofog"
+
+    scheduler_image             = "${var.scheduler_image}"
+    operator_image              = "${var.operator_image}"
+    kubelet_image               = "${var.kubelet_image}"
+    controller_image            = "${var.controller_image}"
+    connector_image             = "${var.connector_image}"
+}
 
 # resource "null_resource" "helm_iofog" {
 #   provisioner "local-exec" {
