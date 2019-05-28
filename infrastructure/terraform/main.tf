@@ -1,12 +1,7 @@
 variable "project_id"           {}
-/////////////////// Network Vars ///////////////////
 variable "network_name"         {}
 variable "gcp_region"           {}
-
-///////////////////// GKE vars /////////////////////
 variable "gke_name"             {}
-
-////////////////// Images Iofog ////////////////////
 variable "controller_image"     {}
 variable "connector_image"      {}
 variable "kubelet_image"        {}
@@ -30,11 +25,11 @@ provider "google-beta" {
 #     auth_token = "${var.auth_token}"
 # }
 
-# terraform {
-#     backend "gcs" {
-#         bucket                  = "terraform-state-edgy-dev"
-#     }
-# }
+terraform {
+    backend "gcs" {
+        bucket                  = "terraform-state-edgy-dev"
+    }
+}
 
 resource "google_service_account" "svc_account" {
     project                     = "${var.project_id}"
@@ -72,12 +67,13 @@ module "kubernetes" {
     service_account             = "azure-gcr@focal-freedom-236620.iam.gserviceaccount.com"
 }
 
-# module "iofog" {
-#     source  = "../modules/k8s_iofog"
+module "iofog" {
+    source  = "../modules/k8s_iofog"
 
-#     scheduler_image             = "${var.scheduler_image}"
-#     operator_image              = "${var.operator_image}"
-#     kubelet_image               = "${var.kubelet_image}"
-#     controller_image            = "${var.controller_image}"
-#     connector_image             = "${var.connector_image}"
-# }
+    scheduler_image             = "${var.scheduler_image}"
+    operator_image              = "${var.operator_image}"
+    kubelet_image               = "${var.kubelet_image}"
+    controller_image            = "${var.controller_image}"
+    connector_image             = "${var.connector_image}"
+    cluster_name                = "${module.kubernetes.name}"
+}

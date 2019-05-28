@@ -5,55 +5,65 @@ trigger:
 pool:
   vmImage: 'ubuntu-16.04'
 
+variables:
+  GOOGLE_APPLICATION_CREDENTIALS: '' 
+
 steps:
-- task: UsePythonVersion@0
+- task: DownloadSecureFile@1
   inputs:
-    versionSpec: '2.7'
-    architecture: 'x64'
+    secureFile: 'azure-gcp.json'
+  displayName: 'Download gcp service account file to use for authentication'
+
+- task: KubectlInstaller@0
+  inputs:
+    kubectlVersion: '1.13.4'
+
+- task: HelmInstaller@1
+  inputs:
+    helmVersionToInstall: '2.13.1'
 
 - script: |
-    pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install Python requirements'
-
-#- script: |
-#    python cli.py up iofog --local
-#  displayName: 'Deploy ioFog locally'
-
-- script: |
-    echo $(gcp.svcacc) | docker login -u _json_key --password-stdin https://gcr.io
-  displayName: 'Docker connect to Registry'
+    export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)"
+    echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    sudo apt-get update && sudo apt-get install google-cloud-sdk
+    echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$DOWNLOADSECUREFILE_SECUREFILEPATH"
+  displayName: 'Install gcloud'
 
 - script: |
-    sed -i "s|controller\:.*|controller: \"$(images.controller)\"|g" plugins/iofog/config.yml
-    sed -i "s|connector\:.*|connector: \"$(images.connector)\"|g" plugins/iofog/config.yml
-    sed -i "s|scheduler\:.*|scheduler: \"$(images.scheduler)\"|g" plugins/iofog/config.yml
-    sed -i "s|operator\:.*|operator: \"$(images.operator)\"|g" plugins/iofog/config.yml
-    sed -i "s|kubelet\:.*|kubelet: \"$(images.kubelet)\"|g" plugins/iofog/config.yml
-    sed -i "s|runner\:.*|runner: \"$(images.runner)\"|g" plugins/iofog/config.yml
-    cat plugins/iofog/config.yml
-  displayName: 'Set ioFog images'
+    echo $GOOGLE_APPLICATION_CREDENTIALS
+    gcloud auth activate-service-account --key-file=$DOWNLOADSECUREFILE_SECUREFILEPATH
+    gcloud config set project focal-freedom-236620
+  displayName: 'Initilaize gcloud'
 
 - script: |
-    echo $(gcp.svc) > plugins/gcp/creds/svcacc.json
-    cat plugins/gcp/creds/svcacc.json
-    python cli.py up gcp --bootstrap=true
-  displayName: 'Deploy GCP Cluster and Agents'
+    echo 'cred...'
+    echo $GOOGLE_APPLICATION_CREDENTIALS
+  displayName: 'gcloud creds'
 
-- script: |
-    python cli.py up iofog --bootstrap=true
-  displayName: 'Deploy ioFog Kubernetes and ioFog Agents'
+- task: TerraformInstaller@0
+  inputs:
+    terraformVersion: '0.11.14'
+  displayName: 'Install Terraform'
 
-- script: |
-    python cli.py up weather
-    python cli.py test weather
-  displayName: 'Test Kubernetes APIs'
+- task: TerraformCLI@0
+  inputs:
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
+  displayName: 'Terraform Init'
 
-- script: |
-    python cli.py test iofog
-  displayName: 'Test ioFog APIs'
+- task: TerraformCLI@0
+  inputs:
+    command: 'plan'
+    commandOptions: '-var-file="vars-dev.tfvars" -auto-approve'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
+    environmentServiceName: 'Pay-As-You-Go(04942fd4-70fc-4ee7-bc1e-cd212c57a25e)'
+  displayName: 'Terraform Plan'
 
-- script: |
-    python cli.py down gcp
-  displayName: 'Tear GCP down'
-  condition: always()
+- task: TerraformCLI@0
+  inputs:
+    command: 'apply'
+    commandOptions: '-var-file="vars-dev.tfvars" -auto-approve'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
+    environmentServiceName: 'Pay-As-You-Go(04942fd4-70fc-4ee7-bc1e-cd212c57a25e)'
+  displayName: 'Terraform Apply'

@@ -1,17 +1,19 @@
 # Dev variables
-project_id      = "focal-freedom-236620"
+project_id          = "focal-freedom-236620"
 
 ## network 
-network_name    = "rush-test"
-gcp_region      = "us-west1"
+network_name        = "rush-test"
+gcp_region          = "us-west1"
 
 #gke
-gke_name        = "rush"
-gke_region      = "us-west1"
+gke_name            = "rush"
+gke_region          = "us-west1"
 
 # iofog images
-controller_image = "iofog/controller:dev"
-connector_image = "iofog/connector:dev"
-scheduler_image = "iofog/iofog-scheduler:develop"
-operator_image  = "iofog/iofog-operator:develop"
-kubelet_image   = "iofog/iofog-kubelet:develop"
+controller_image    = "gcr.io/focal-freedom-236620/controller:develop"
+connector_image     = "gcr.io/focal-freedom-236620/connector:develop"
+scheduler_image     = "igcr.io/focal-freedom-236620/scheduler:dev-latest"
+operator_image      = "gcr.io/focal-freedom-236620/operator:dev-latest"
+kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:dev-latest"
+
+#packer

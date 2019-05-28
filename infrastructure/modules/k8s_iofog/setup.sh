@@ -1,6 +1,7 @@
 #!/bin/sh
 
-wait-for-lb(){
+wait_for_lb()
+{
     NAMESPACE="$1"
     SVC="$2"
     EXTERNAL_IP=""
@@ -12,7 +13,8 @@ wait-for-lb(){
     echo "$EXTERNAL_IP"
 }
 
-get-controller-token() {
+get_controller_token() 
+{
     IP=$1
     PORT=$2
 
@@ -35,8 +37,10 @@ get-controller-token() {
     echo $TOKEN
 }
 
+echo "Configuring iofog for cluster $CLUSTER_NAME"
 
 # Helm
+echo "Configuring Helm..."
 helm init --wait
 kubectl create serviceaccount --namespace kube-system tiller
 kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
@@ -46,6 +50,14 @@ helm repo add iofog https://eclipse-iofog.github.io/helm
 helm repo update iofog
 
 # ioFog core on Kubernetes
+echo "Installing iofog..."
+echo "Images:"
+echo $SCHEDULER_IMG
+echo $CONTROLLER_IMG
+echo $CONNECTOR_IMG
+echo $OPERATOR_IMG
+echo $KUBELET_IMG
+
 kubectl create namespace iofog
 
 helm install iofog/iofog --set-string \
@@ -58,16 +70,16 @@ connector.image="$CONNECTOR_IMG"
 # "$SCRIPT"/wait-for-pods.bash iofog name=connector
 
 echo "Waiting for Controller LoadBalancer IP..."
-CTRL_IP=$(wait-for-lb iofog controller)
+CTRL_IP=$(wait_for_lb iofog controller)
 echo "Waiting for Connector LoadBalancer IP..."
-CNCT_IP=$(wait-for-lb iofog connector)
+CNCT_IP=$(wait_for_lb iofog connector)
 
 # Configure Controller with Connector IP
 CTRL_POD=$(kubectl get pod -l name=controller -n iofog -o jsonpath="{.items[0].metadata.name}")
 kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n gke -d connector --dev-mode-on -i "$CNCT_IP"
 
 # Get Auth token from Controller
-TOKEN=$(get-controller-token "$CTRL_IP" 51121)
+TOKEN=$(get_controller_token "$CTRL_IP" 51121)
 
 helm install iofog/iofog-k8s --set-string \
 controller.token="$TOKEN",\
