@@ -17,3 +17,8 @@ output "name" {
   description = "Cluster name"
   value       = "${module.gke.name}"
 }
+
+output "region" {
+  description = "Cluster region"
+  value       = "${module.gke.region}"
+}

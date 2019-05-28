@@ -13,7 +13,6 @@ wait-for-lb(){
 }
 
 get-controller-token() {
-
     IP=$1
     PORT=$2
 

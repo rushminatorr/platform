@@ -10,6 +10,7 @@ gke_name        = "rush"
 gke_region      = "us-west1"
 
 # iofog images
+controller_image = "iofog/controller:dev"
 connector_image = "iofog/connector:dev"
 scheduler_image = "iofog/iofog-scheduler:develop"
 operator_image  = "iofog/iofog-operator:develop"
