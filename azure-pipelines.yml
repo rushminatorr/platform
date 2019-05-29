@@ -52,18 +52,13 @@ steps:
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
   displayName: 'Terraform Init'
 
-- task: TerraformCLI@0
-  inputs:
-    command: 'plan'
-    commandOptions: '-var-file="vars-dev.tfvars" -auto-approve'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
-    environmentServiceName: 'Pay-As-You-Go(04942fd4-70fc-4ee7-bc1e-cd212c57a25e)'
+- script: |
+    cd $(System.DefaultWorkingDirectory)/infrastructure/terraform
+    terraform plan -var-file="vars-dev.tfvars" -auto-approve
   displayName: 'Terraform Plan'
 
-- task: TerraformCLI@0
-  inputs:
-    command: 'apply'
-    commandOptions: '-var-file="vars-dev.tfvars" -auto-approve'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/terraform'
-    environmentServiceName: 'Pay-As-You-Go(04942fd4-70fc-4ee7-bc1e-cd212c57a25e)'
+
+- script: |
+    cd $(System.DefaultWorkingDirectory)/infrastructure/terraform
+    terraform apply -var-file="vars-dev.tfvars" -auto-approve
   displayName: 'Terraform Apply'
