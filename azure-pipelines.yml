@@ -1,5 +1,4 @@
 trigger:
-- master
 - develop
 
 pool:
@@ -7,6 +6,8 @@ pool:
 
 variables:
   GOOGLE_APPLICATION_CREDENTIALS: '' 
+  tf_var_file: 'vars-dev.tfvars'
+
 
 steps:
 - task: DownloadSecureFile@1
@@ -32,8 +33,8 @@ steps:
 
 - script: |
     echo $GOOGLE_APPLICATION_CREDENTIALS
-    gcloud auth activate-service-account --key-file=$DOWNLOADSECUREFILE_SECUREFILEPATH
-    gcloud config set project focal-freedom-236620
+    gcloud --quiet auth activate-service-account --key-file=$DOWNLOADSECUREFILE_SECUREFILEPATH
+    gcloud --quiet config set project focal-freedom-236620
   displayName: 'Initilaize gcloud'
 
 - script: |
@@ -54,11 +55,11 @@ steps:
 
 - script: |
     cd $(System.DefaultWorkingDirectory)/infrastructure/terraform
-    terraform plan -var-file="vars-dev.tfvars" -auto-approve
+    terraform plan -var-file=$tf_var_file -auto-approve
   displayName: 'Terraform Plan'
 
 
 - script: |
-    cd $(System.DefaultWorkingDirectory)/infrastructure/terraform
-    terraform apply -var-file="vars-dev.tfvars" -auto-approve
+    cd $(System.DefaultWorkingDirectory)/infrastructure/terraformterraf
+    terraform apply -var-file=$tf_var_file -auto-approve
   displayName: 'Terraform Apply'
