@@ -60,7 +60,7 @@ echo $KUBELET_IMG
 
 kubectl create namespace iofog
 
-helm install iofog/iofog --set-string \
+helm install --name iofog iofog/iofog --set-string \
 controller.image="$CONTROLLER_IMG",\
 connector.image="$CONNECTOR_IMG"
 
@@ -81,7 +81,7 @@ kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n 
 # Get Auth token from Controller
 TOKEN=$(get_controller_token "$CTRL_IP" 51121)
 
-helm install iofog/iofog-k8s --set-string \
+helm install --name iofog-k8s iofog/iofog-k8s --set-string \
 controller.token="$TOKEN",\
 scheduler.image="$SCHEDULER_IMG",\
 operator.image="$OPERATOR_IMG",\

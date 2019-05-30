@@ -22,3 +22,8 @@ output "region" {
   description = "Cluster region"
   value       = "${module.gke.region}"
 }
+
+output "kubeconfig" {
+  description = "Cluster kubeconfig"
+  value       = "https://console.cloud.google.com/storage/browser/azure-build-secrets/${module.gke.name}.kubeconfig.encrypted"
+}

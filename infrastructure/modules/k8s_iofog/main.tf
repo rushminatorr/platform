@@ -4,11 +4,13 @@ variable "kubelet_image"        {}
 variable "operator_image"       {}
 variable "scheduler_image"      {}
 variable "cluster_name"         {}
+variable "kubeconfig"           {}
+variable "script_path"          {}
 
 resource "null_resource" "iofog" {
 
     provisioner "local-exec" {
-        command = "ls -lA && sh setup.sh"
+        command = "sh ${var.script_path}"
 
         environment = {
             CLUSTER_NAME    = "${var.cluster_name}"
