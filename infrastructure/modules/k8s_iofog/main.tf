@@ -8,7 +8,7 @@ variable "cluster_name"         {}
 resource "null_resource" "iofog" {
 
     provisioner "local-exec" {
-        command = "./setup.sh"
+        command = "ls -lA && sh setup.sh"
 
         environment = {
             CLUSTER_NAME    = "${var.cluster_name}"
