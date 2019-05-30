@@ -12,7 +12,7 @@ gke_region          = "us-west1"
 # iofog images
 controller_image    = "gcr.io/focal-freedom-236620/controller:develop"
 connector_image     = "gcr.io/focal-freedom-236620/connector:develop"
-scheduler_image     = "igcr.io/focal-freedom-236620/scheduler:dev-latest"
+scheduler_image     = "gcr.io/focal-freedom-236620/scheduler:dev-latest"
 operator_image      = "gcr.io/focal-freedom-236620/operator:dev-latest"
 kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:dev-latest"
 

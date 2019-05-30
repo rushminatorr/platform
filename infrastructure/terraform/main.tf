@@ -76,4 +76,6 @@ module "iofog" {
     controller_image            = "${var.controller_image}"
     connector_image             = "${var.connector_image}"
     cluster_name                = "${module.kubernetes.name}"
+    kubeconfig                  = "${module.kubernetes.kubeconfig}"
+    script_path                 = "../modules/k8s_iofog/setup.sh"
 }

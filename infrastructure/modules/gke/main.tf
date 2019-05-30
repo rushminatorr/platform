@@ -50,18 +50,6 @@ module "gke" {
     # }
 }
 
-# resource "null_resource" "fetch_kube_config" {
-#     provisioner "local-exec" {
-#         command = "gcloud --quiet beta container clusters get-credentials $CLUSTER --region $REGION --project $PROJECT"
-
-#         environment = {
-#             CLUSTER   = "${module.gke.name}"
-#             REGION    = "${module.gke.region}"
-#             PROJECT   = "${var.project_id}"
-#         }
-#     }
-# }
-
 resource "null_resource" "fetch_kubeconfig" {
     provisioner "local-exec" {
         command = "gcloud --quiet beta container clusters get-credentials ${module.gke.name} --region ${module.gke.region} --project ${var.project_id}"
@@ -79,4 +67,6 @@ resource "null_resource" "encrypt_kubeconfig" {
     provisioner "local-exec" {
         command = "gsutil cp ~/.kube/${module.gke.name}.kubeconfig.encrypted gs://azure-build-secrets"
     }
+
+    depends_on = ["null_resource.fetch_kubeconfig"]
 }
