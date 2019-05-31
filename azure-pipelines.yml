@@ -64,3 +64,4 @@ steps:
     cd $(System.DefaultWorkingDirectory)/infrastructure/terraformterraf
     terraform apply -var-file=$tf_var_file -auto-approve
   displayName: 'Terraform Apply'
+

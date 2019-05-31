@@ -7,7 +7,12 @@ variable "cluster_name"         {}
 variable "kubeconfig"           {}
 variable "script_path"          {}
 
-resource "null_resource" "iofog" {
+resource "null_resource" "depends_on" {
+  triggers {
+    depends_on = "${var.kubeconfig}"
+  }
+}
+resource "null_resource" "iofog_iofog" {
 
     provisioner "local-exec" {
         command = "sh ${var.script_path}"
@@ -21,4 +26,7 @@ resource "null_resource" "iofog" {
             CONNECTOR_IMG   = "${var.connector_image}"
         }
     }
+    depends_on = [
+        "null_resource.depends_on"
+    ]
 }
