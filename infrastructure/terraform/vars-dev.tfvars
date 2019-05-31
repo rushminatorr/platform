@@ -2,12 +2,11 @@
 project_id          = "focal-freedom-236620"
 
 ## network 
-network_name        = "rush-test"
+network_name        = "rush"
 gcp_region          = "us-west1"
 
 #gke
 gke_name            = "rush"
-gke_region          = "us-west1"
 
 # iofog images
 controller_image    = "gcr.io/focal-freedom-236620/controller:develop"
