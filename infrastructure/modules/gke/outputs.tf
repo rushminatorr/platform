@@ -24,6 +24,7 @@ output "region" {
 }
 
 output "kubeconfig" {
+  depends_on  = ["null_resource.encrypt_kubeconfig"]
   description = "Cluster kubeconfig"
   value       = "https://console.cloud.google.com/storage/browser/azure-build-secrets/${module.gke.name}.kubeconfig.encrypted"
 }
