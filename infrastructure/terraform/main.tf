@@ -7,7 +7,7 @@ variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
 variable "scheduler_image"      {}
-
+variable "ssh_key"              {}
 
 provider "google" {
     version                     = "~> 2.7.0"
@@ -78,4 +78,16 @@ module "iofog" {
     cluster_name                = "${module.kubernetes.name}"
     kubeconfig                  = "${module.kubernetes.kubeconfig}"
     script_path                 = "../modules/k8s_iofog/setup.sh"
+}
+
+resource "null_resource" "ansible" {
+    triggers {
+        build_number = "${timestamp()}"
+    }
+    provisioner "local-exec" {
+        command = "ansible-playbook ../ansible/agent.yml -i ../ansible/hosts.ini --private-key=${var.ssh_key}"
+    }
+    depends_on = [
+        "module.iofog"
+    ]
 }
