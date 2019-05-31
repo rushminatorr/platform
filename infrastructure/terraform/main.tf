@@ -7,7 +7,7 @@ variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
 variable "scheduler_image"      {}
-
+variable "ssh_key"              {}
 
 provider "google" {
     version                     = "~> 2.7.0"
