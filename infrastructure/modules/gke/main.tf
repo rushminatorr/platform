@@ -54,6 +54,7 @@ resource "null_resource" "fetch_kubeconfig" {
     provisioner "local-exec" {
         command = "gcloud --quiet beta container clusters get-credentials ${module.gke.name} --region ${module.gke.region} --project ${var.project_id}"
     }
+    depends_on = ["module.gke"]
 }
 
 resource "null_resource" "encrypt_kubeconfig" {
