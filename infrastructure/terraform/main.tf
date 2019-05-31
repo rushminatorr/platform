@@ -79,3 +79,15 @@ module "iofog" {
     kubeconfig                  = "${module.kubernetes.kubeconfig}"
     script_path                 = "../modules/k8s_iofog/setup.sh"
 }
+
+resource "null_resource" "ansible" {
+    triggers {
+        build_number = "${timestamp()}"
+    }
+    provisioner "local-exec" {
+        command = "ansible-playbook ../ansible/agent.yml -i ../ansible/hosts.ini --private-key=${var.ssh_key}"
+    }
+    depends_on = [
+        "module.iofog"
+    ]
+}
