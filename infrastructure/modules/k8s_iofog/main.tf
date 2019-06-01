@@ -15,7 +15,7 @@ resource "null_resource" "depends_on" {
 resource "null_resource" "iofog" {
 
     provisioner "local-exec" {
-        command = "sh ${var.script_path} && sed 's/^controller_ip=.*/controller_ip='\"$CTRL_IP\"'/g' ../ansible/hosts.ini"
+        command = "sh ${var.script_path} && sed 's/^controller_ip=.*/controller_ip='\"$CTRL_IP\"'/g' ../ansible/hosts.ini && cat ../ansible/hosts.ini"
 
         environment = {
             CLUSTER_NAME    = "${var.cluster_name}"

@@ -85,7 +85,7 @@ resource "null_resource" "ansible" {
         build_number = "${timestamp()}"
     }
     provisioner "local-exec" {
-        command = "ansible-playbook ../ansible/agent.yml -i ../ansible/hosts.ini --private-key=${var.ssh_key}"
+        command = "ansible-playbook ../ansible/agent.yml -i ../ansible/hosts.ini --private-key=${var.ssh_key} -vvvv"
     }
     depends_on = [
         "module.iofog"
