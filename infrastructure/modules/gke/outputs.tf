@@ -1,3 +1,4 @@
+# GKE outputs
 output "endpoint" {
     description = "Cluster endpoint"
     value       = "${module.gke.endpoint}"

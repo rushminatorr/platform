@@ -1,14 +1,13 @@
-#
+######################################################
 # Ansible Playbook to setup and configure iofog Agent
-#
+######################################################
 ---
-#
-# All of the tasks needed for the iofog Agent host
-#
 - hosts: all
   remote_user: edgeworx
   port: 55501
   become: true
+  vars: 
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
   gather_facts: true
   tasks:
     - name: Begin!
@@ -29,13 +28,9 @@
 
     - debug: var=aptoutput
 
-
     # Install iofog Agent
     - name: Download install script
       get_url: url=https://raw.githubusercontent.com/eclipse-iofog/iofog.org/saeid/jdk/static/linux.sh dest=/opt/linux.sh mode=755
-
-    - name: Hack workaround for installing non authenticated packages
-      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
 
     - name: Execute install script
       shell: /opt/linux.sh
