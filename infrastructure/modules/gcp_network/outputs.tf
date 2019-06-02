@@ -1,4 +1,4 @@
-# VPC
+# VPC Outputs
 output "network_name" {
     description = "The name of the VPC being created"
     value       = "${module.vpc.network_name}"

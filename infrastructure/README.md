@@ -6,19 +6,24 @@ VPC, subnets
 GKE
 iofog
 
-to do, maybe
-NAT
-IP
-dns endpoint
-
 
 
 ![components](docs/components.png)
 
 ## Prerequisites
 
+Install tools:
+- Terraform (v11*)
+- Ansible
+- gcloud
+- Helm
+- Kubectl
 
-### Usage
+Account:
+- packet account token
+- gcloud account token
+
+## Usage
 
 In the terraform directory, run:
 
@@ -31,13 +36,18 @@ In the terraform directory, run:
 | -----------------------|:----------------------------------------------------:|
 | `name`                 | *name *                                              |
 
-
+## Ansible Playbook
+`ansible-playbook agent.yml -e "controller_ip=104.196.230.239" --private-key=~/.ssh/azure -i 147.75.46.161,`
 ## Manual steps
 
 
-
 ### Helpful Commands
-
+Login to gcloud: `gcloud auth login`
+Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
 
 #### To Do
 separate project to setup GCP project and IAM
+setup ansible role to install agent package provided as input
+user provided subnets and network configuration
+update packet module to allow multiple instance creation - count var
+if packet vars empty, do not ask for token
