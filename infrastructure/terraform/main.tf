@@ -1,5 +1,5 @@
 variable "project_id"           {}
-variable "project_name"         {}
+variable "environment"          {}
 variable "gcp_region"           {}
 variable "controller_image"     {}
 variable "connector_image"      {}
@@ -37,7 +37,7 @@ module "gcp_network" {
     source  = "../modules/gcp_network"
 
     project_id                  = "${var.project_id}"
-    network_name                = "${var.project_name}"
+    network_name                = "${var.environment}"
 }
 
 #############################################################
@@ -47,7 +47,7 @@ module "kubernetes" {
     source  = "../modules/gke"
 
     project_id                  = "${var.project_id}"
-    gke_name                    = "${var.project_name}"
+    gke_name                    = "${var.environment}"
     gke_region                  = "${var.gcp_region}"
     gke_network_name            = "${module.gcp_network.network_name}"
     gke_subnetwork              = "${module.gcp_network.subnets_names[0]}"

@@ -1,12 +1,7 @@
 # Dev variables
 project_id          = "focal-freedom-236620"
-project_name        = "rush"
-
-## network 
+environment         = "dev"
 gcp_region          = "us-west1"
-
-#gke
-gke_name            = "rush"
 
 # iofog images
 controller_image    = "gcr.io/focal-freedom-236620/controller:develop"
