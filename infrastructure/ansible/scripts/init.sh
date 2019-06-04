@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 CONTROLLER_HOST=$1
+AGENT_NAME=$(hostname -f)
 
 token=""
 uuid=""
@@ -31,7 +32,7 @@ function create-node() {
         --url $CONTROLLER_HOST/iofog \
         --header "Authorization: $token" \
         --header 'Content-Type: application/json' \
-        --data '{"name":"agent-smith","fogType":0}')
+        --data '{"name": '$AGENT_NAME' ,"fogType":0}')
     echo "$node"
     uuid=$(echo $node | jq -r .uuid)
 }
@@ -47,10 +48,6 @@ function provision() {
 
     iofog-agent provision $key
 }
-
-
-#wait "iofog-agent status" "iofog is not running."
-#wait "curl --request GET --url $CONTROLLER_HOST/status" "Failed"
 
 # These are our setup steps
 login
