@@ -83,9 +83,9 @@ resource "null_resource" "ansible" {
         command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && echo $TF_VAR_controller_ip"
     }
     # Run ansible playbook against edge nodes to install agents
-    provisioner "local-exec" {
-        command = "ansible-playbook ../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip\" -i \"${var.agent_ips}\","
-    }
+    # provisioner "local-exec" {
+    #     command = "ansible-playbook ../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip\" -i \"${var.agent_ips}\","
+    # }
     depends_on = [
         "module.iofog"
     ]
