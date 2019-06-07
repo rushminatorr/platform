@@ -3,15 +3,18 @@
 ######################################################
 ---
 - hosts: all
-  remote_user: edgeworx
-  port: 55501
+  remote_user: root
+  port: 22
   become: true
   vars: 
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
   gather_facts: true
   tasks:
     - name: Begin!
-      command: echo "Beginning install of iofogAgent software"
+      command: echo "Beginning install of iofogAgent software on {{ package_cloud_creds }}"
+      register: echo
+
+    - debug: var=echo.stdout_lines
 
     - name: Hack workaround for installing non authenticated packages
       copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
@@ -26,19 +29,20 @@
         - jq
       register: aptoutput
 
-    - debug: var=aptoutput
+    - debug: var=aptoutput.stdout_lines
 
-    # Install iofog Agent
-    - name: Download install script
-      get_url: url=https://raw.githubusercontent.com/eclipse-iofog/iofog.org/saeid/jdk/static/linux.sh dest=/opt/linux.sh mode=755
+    - name: Copy install script to Agent
+      copy:
+        src: scripts/agent.sh
+        dest: /opt/agent.sh
+        mode: 755
 
     - name: Execute install script
-      shell: /opt/linux.sh
-      register: install
+      shell: /opt/agent.sh "{{ agent_version }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
+      register: install_agent
 
-    - debug: var=install
+    - debug: var=install_agent.stdout_lines
 
-    # Start iofog agent
     - name: Start iofog Agent
       shell: sudo service iofog-agent start
 
@@ -56,33 +60,27 @@
         src: scripts/wait-for-agent.sh
         dest: wait-for-agent.sh
         mode: 755
-      register: copy_script
-
-    - debug: var=copy_script
 
     - name: Wait for agent
       shell: ./wait-for-agent.sh
       register: wait_agent
 
-    - debug: var=wait_agent
+    - debug: var=wait_agent.stdout_lines
 
     - name: Change Controller URL
       shell: iofog-agent config -a http://"{{ controller_ip }}":51121/api/v3/
       register: url
 
-    - debug: var=url
+    - debug: var=url.stdout_lines
 
     - name: Copy setup script to Agent
       copy:
         src: scripts/init.sh
         dest: init.sh
         mode: 755
-      register: copy_script
-
-    - debug: var=copy_script
 
     - name: Run the Agent setup
-      shell: ./init.sh http://"{{ controller_ip }}":51121/api/v3
+      shell: ./init.sh http://"{{ controller_ip }}":51121/api/v3 "{{ inventory_hostname }}"
       register: setup
 
-    - debug: var=setup
+    - debug: var=setup.stdout_lines    

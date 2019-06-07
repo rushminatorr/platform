@@ -60,14 +60,10 @@ echo $KUBELET_IMG
 
 kubectl create namespace iofog
 
-helm install --name iofog iofog/iofog --set-string \
+helm install iofog/iofog --name iofog --set-string \
 controller.image="$CONTROLLER_IMG",\
-connector.image="$CONNECTOR_IMG"
-
-# echo "Waiting for Controller Pod..."
-# "$SCRIPT"/wait-for-pods.bash iofog name=controller
-# echo "Waiting for Connector Pod..."
-# "$SCRIPT"/wait-for-pods.bash iofog name=connector
+connector.image="$CONNECTOR_IMG",\
+controller.loadBalancerIP="$CONTROLLER_IP"
 
 echo "Waiting for Controller LoadBalancer IP..."
 CTRL_IP=$(wait_for_lb iofog controller)
@@ -76,7 +72,8 @@ CNCT_IP=$(wait_for_lb iofog connector)
 
 # Configure Controller with Connector IP
 CTRL_POD=$(kubectl get pod -l name=controller -n iofog -o jsonpath="{.items[0].metadata.name}")
-# kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n gke -d connector --dev-mode-on -i "$CNCT_IP"
+kubectl exec "$CTRL_POD" -n iofog -- iofog-controller connector add -n iofog-connector -d gke -i "${CONNECTOR_IP}" -H
+
 
 # Get Auth token from Controller
 TOKEN=$(get_controller_token "$CTRL_IP" 51121)

@@ -6,6 +6,7 @@ variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
 variable "scheduler_image"      {}
+variable "controller_ip"        {}
 variable "cluster_name"         {}
 variable "kubeconfig"           {}
 variable "script_path"          {}
@@ -28,6 +29,7 @@ resource "null_resource" "iofog" {
             KUBELET_IMG     = "${var.kubelet_image}"
             CONTROLLER_IMG  = "${var.controller_image}"
             CONNECTOR_IMG   = "${var.connector_image}"
+            CONTROLLER_IP   = "${var.controller_ip}"
         }
     }
     depends_on = [

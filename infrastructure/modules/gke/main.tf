@@ -26,7 +26,7 @@ module "gke" {
     node_pools = [
     {
         name                    = "${var.gke_name}-node-pool"
-        machine_type            = "n1-standard-2"
+        machine_type            = "n1-standard-1"
         min_count               = 1
         max_count               = 20
         disk_size_gb            = 20
