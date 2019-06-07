@@ -8,6 +8,7 @@ variable "operator_image"       {}
 variable "scheduler_image"      {}
 variable "ssh_key"              {}
 variable "agent_version"        {}
+variable "agent_repo"           {}
 variable "controller_ip"        {
     default = ""
 }
@@ -117,7 +118,7 @@ resource "null_resource" "ansible" {
     }
     # Run ansible playbook against edge nodes to install agents
     provisioner "local-exec" {
-        command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_version=${var.agent_version} package_cloud_creds=$TF_VAR_package_cloud_creds\" -i edge_hosts.ini"
+        command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$TF_VAR_package_cloud_creds\" -i edge_hosts.ini"
     }
     depends_on = [
         "module.iofog"

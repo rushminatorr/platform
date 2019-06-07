@@ -72,9 +72,8 @@ CNCT_IP=$(wait_for_lb iofog connector)
 
 # Configure Controller with Connector IP
 CTRL_POD=$(kubectl get pod -l name=controller -n iofog -o jsonpath="{.items[0].metadata.name}")
-kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n gke -d connector --dev-mode-on -i "$CNCT_IP"
+kubectl exec "$CTRL_POD" -n iofog -- iofog-controller connector add -n iofog-connector -d gke -i "${CONNECTOR_IP}" -H
 
-kubectl exec "$CTRL_POD" -n iofog -- node /controller/src/main connector add -n gke -d connector --dev-mode-on -i "$CNCT_IP"
 
 # Get Auth token from Controller
 TOKEN=$(get_controller_token "$CTRL_IP" 51121)
