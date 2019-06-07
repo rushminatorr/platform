@@ -38,8 +38,8 @@ In the user directory, run:
 
 1. *terraform init* to initialize your terraform directory
 2. *terraform plan -var-file="vars-dev.tfvars"* pass in your vars file
-3. *terraform apply -var-file="vars-dev.tfvars" -auto-approve * apply will create your resources
-4. *terraform destroy -var-file="vars-dev.tfvars" -auto-approve * use the destroy command to delete all your resources
+3. *terraform apply -var-file="vars-dev.tfvars" -auto-approve* apply will create your resources
+4. *terraform destroy -var-file="vars-dev.tfvars" -auto-approve* use the destroy command to delete all your resources
 
 | Variables              | Description                                                  |
 | -----------------------|:------------------------------------------------------------:|
@@ -69,13 +69,18 @@ We use ansible to configure edge nodes with Agent software. You can provide an i
 
 See sample command Terraform used to run the playbook to provision agents. From the user environment folder, run the following command. This uses the `agent.yml` playbook under the ansible folder. 
 
-`ansible-playbook ../../agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini`
+```
+ansible-playbook ../../agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini
+```
 
 If you plan to use snapshot repo, you will need to provide package cloud token, leave it empty if usinstalling released version. 
 
 ### Helpful Commands
 
-Login to gcloud: `gcloud auth login`
-Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
-Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars-develop.tfvars -auto-approve`
-Terraform OUtput `terraform output -module=packet_edge_nodes`
+- Login to gcloud: `gcloud auth login`
+
+- Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
+
+- Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars-develop.tfvars -auto-approve`
+
+- Terraform OUtput `terraform output -module=packet_edge_nodes`
