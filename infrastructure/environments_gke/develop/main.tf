@@ -116,9 +116,17 @@ resource "null_resource" "ansible" {
     provisioner "local-exec" {
         command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && echo $TF_VAR_controller_ip" 
     }
-    # Run ansible playbook against edge nodes to install agents
+    # Run ansible playbook against user provided edge nodes to install agents
     provisioner "local-exec" {
         command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$TF_VAR_package_cloud_creds\" -i edge_hosts.ini"
+    }
+    # Fetch Packet agent list
+    provisioner "local-exec" { 
+        command = "echo Running Agent provisioning on Packet nodes: ${join(",", module.packet_edge_nodes.edge_nodes)}"
+    }
+    # Run ansible playbook against packet edge nodes to install agents
+    provisioner "local-exec" {
+        command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$TF_VAR_package_cloud_creds\" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
     }
     depends_on = [
         "module.iofog"
