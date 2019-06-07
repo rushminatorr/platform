@@ -3,11 +3,16 @@ We use Terraform to deploy all infrastructure and ansible to configure remote ed
 
 ## Components
 
+The project spins up an infrastructure stack on Google Cloud Platform which consists of:
 - vpc 
 - subnets & firewall
 - gke
-- iofog
-- ansible to configure remote agents
+
+Optionally, there is a choice to deploy x86 or arm nodes on Packet.
+
+After the infrastructure setup, iofog ECN is deployed on the GKE cluster using the iofog Helm chart.
+
+Once the control plane is setup, ansible is used to configure edge nodes provided by user as an inventory in the hosts.ini file, and any packet nodes cretaed. Iofog agent software id deployed on these, configured and registerd with the iofog controller in the control plane. 
 
 ![components](docs/components.png)
 
@@ -20,14 +25,16 @@ Install tools:
 - Helm
 - Kubectl
 
-Account:
+Account tokens:
 - packet account token exported as an environment variable for packet provider. Command: `export PACKET_AUTH_TOKEN=xxxxx`
 - package_cloud account token exported as a terraforn environment variable. Command: `export TF_VAR_package_cloud_creds=xxxxx`
 - gcloud account token to deploy to GCP
 
 ## Usage
 
-In the terraform directory, run:
+As a user, you can switch to the environments_gke directory to find a user folder holding a sample user environment inventory and environment configuration. This configuration does not have a terraform backend, will use local backend to store terraform state files.
+
+In the user directory, run:
 
 1. *terraform init* to initialize your terraform directory
 2. *terraform plan -var-file="vars-dev.tfvars"* pass in your vars file
@@ -55,16 +62,16 @@ In the terraform directory, run:
 | `plan_x86`             | *server plan for device on x86 available on facility chosen* |
 | `count_arm`            | *number of arm sgents to spin up*                            |
 | `plan_arm`             | *server plan for device on arm available on facility chosen* |
-                   
 
 ## Ansible Playbook for Agent Configuration
 
-We use ansible to configure edge nodes with Agent software. You can provide comma separated list of ips as input that will be passed in as hosts to provision agent software on. 
+We use ansible to configure edge nodes with Agent software. You can provide an inventory with the remote hosts details to provision agents. See sample inventory `edge_hosts.ini`. 
 
-See sample command Terraform uses to run the playbook to provision agents.
-If you wish to provision a set of agent, just populate the host file and run teh following command providing with the inputs.
+See sample command Terraform used to run the playbook to provision agents. From the user environment folder, run the following command. This uses the `agent.yml` playbook under the ansible folder. 
 
-`ansible-playbook agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini`
+`ansible-playbook ../../agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini`
+
+If you plan to use snapshot repo, you will need to provide package cloud token, leave it empty if usinstalling released version. 
 
 ### Helpful Commands
 
@@ -72,12 +79,3 @@ Login to gcloud: `gcloud auth login`
 Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
 Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars-develop.tfvars -auto-approve`
 Terraform OUtput `terraform output -module=packet_edge_nodes`
-
-### To Do
-- separate project to setup GCP project and IAM
-- setup ansible role to install agent package provided as input
-- user provided subnets and network configuration
-- update packet module to allow multiple instance creation - count var
-- packet resources creation optional based on input
-- export TF_VAR_package_cloud_creds
-- user - no bucket
