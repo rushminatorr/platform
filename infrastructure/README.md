@@ -46,19 +46,20 @@ In the terraform directory, run:
 | `agent_ips`            | *list of edge ips, comma separated to install agent on*   |
 | `ssh_key`              | *path to ssh key to be used for accessing edge nodes*     |
 
-## Ansible Playbook
+## Ansible Playbook for Agent Configuration
 
 We use ansible to configure edge nodes with Agent software. You can provide comma separated list of ips as input that will be passed in as hosts to provision agent software on. 
 
 See sample command Terraform uses to run the playbook to provision agents.
 
-`ansible-playbook agent.yml -e "controller_ip=104.196.230.239" --private-key=~/.ssh/azure -i 147.75.46.161,`
+`ansible-playbook agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini`
 
 ### Helpful Commands
 
 Login to gcloud: `gcloud auth login`
-
 Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
+Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars-develop.tfvars -auto-approve`
+Terraform OUtput `terraform output -module=packet_edge_nodes`
 
 ### To Do
 - separate project to setup GCP project and IAM
@@ -66,3 +67,5 @@ Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER
 - user provided subnets and network configuration
 - update packet module to allow multiple instance creation - count var
 - packet resources creation optional based on input
+- export TF_VAR_package_cloud_creds
+- user - no bucket

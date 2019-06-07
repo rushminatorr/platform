@@ -1,19 +1,9 @@
 #!/usr/bin/env bash
 CONTROLLER_HOST=$1
-AGENT_NAME=$(hostname -f)
+AGENT_NAME=$2
 
 token=""
 uuid=""
-
-function wait() {
-    while true; do
-        str=`eval "$1"`
-        if [[ ! $str =~ $2 ]]; then
-            break
-        fi
-        sleep .5
-    done
-}
 
 function login() {
     echo "Logging in"
@@ -25,14 +15,13 @@ function login() {
     token=$(echo $login | jq -r .accessToken)
 }
 
-
 function create-node() {
     echo "Creating node"
     node=$(curl --request POST \
         --url $CONTROLLER_HOST/iofog \
         --header "Authorization: $token" \
         --header 'Content-Type: application/json' \
-        --data '{"name": '$AGENT_NAME' ,"fogType":0}')
+        --data '{"name": '\"$AGENT_NAME\"' ,"fogType":0}')
     echo "$node"
     uuid=$(echo $node | jq -r .uuid)
 }
