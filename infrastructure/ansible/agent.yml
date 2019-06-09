@@ -29,7 +29,7 @@
         - jq
       register: aptoutput
 
-    - debug: var=aptoutput.stdout_lines
+    - debug: var=aptoutput
 
     - name: Copy install script to Agent
       copy:

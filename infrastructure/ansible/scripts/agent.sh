@@ -449,8 +449,8 @@ version="$2"
 token="$3"
 if [ "$env" = "dev" ] 
 then
-	[[ -z $version ]] && { echo "Provide version number to install from snapshot repo" ; exit 1; }
-	[[ -z $token ]] && { echo "Provide access token to query snapshot repo on Package cloud" ; exit 1; }
+	[ -z "$version" ] && { echo "Provide version number to install from snapshot repo" ; exit 1; }
+	[ -z "$token" ] && { echo "Provide access token to query snapshot repo on Package cloud" ; exit 1; }
 
 else 
 	echo "Will be installing iofog-agent from public repo"
