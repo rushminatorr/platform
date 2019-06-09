@@ -27,7 +27,7 @@ Install tools:
 
 Account tokens:
 - packet account token exported as an environment variable for packet provider. Command: `export PACKET_AUTH_TOKEN=xxxxx`
-- package_cloud account token exported as a terraforn environment variable. Command: `export TF_VAR_package_cloud_creds=xxxxx`
+- package_cloud account token exported as a terraforn environment variable. Command: `export PACKAGE_CLOUD_CREDS=xxxxx`
 - gcloud account token to deploy to GCP
 
 ## Usage
@@ -73,7 +73,7 @@ See sample command Terraform used to run the playbook to provision agents. From 
 ansible-playbook ../../agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini
 ```
 
-If you plan to use snapshot repo, you will need to provide package cloud token, leave it empty if usinstalling released version. 
+If you plan to use snapshot repo, you will need to provide package cloud token, leave it empty if installing released version. 
 
 ### Helpful Commands
 
