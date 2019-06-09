@@ -11,7 +11,7 @@
   gather_facts: true
   tasks:
     - name: Begin!
-      command: echo "Beginning install of iofogAgent software on {{ package_cloud_creds }}"
+      command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }}"
       register: echo
 
     - debug: var=echo.stdout_lines
@@ -38,7 +38,7 @@
         mode: 755
 
     - name: Execute install script
-      shell: /opt/agent.sh "{{ agent_version }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
+      shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
       register: install_agent
 
     - debug: var=install_agent.stdout_lines
@@ -80,7 +80,7 @@
         mode: 755
 
     - name: Run the Agent setup
-      shell: ./init.sh http://"{{ controller_ip }}":51121/api/v3 "{{ inventory_hostname }}"
+      shell: ./init.sh http://"{{ controller_ip }}":51121/api/v3 {{ ansible_hostname }}
       register: setup
 
     - debug: var=setup.stdout_lines    
