@@ -38,7 +38,7 @@
         mode: 755
 
     - name: Execute install script
-      shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
+      shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ lookup('env','PACKAGE_CLOUD_CREDS') }}"
       register: install_agent
 
     - debug: var=install_agent.stdout_lines

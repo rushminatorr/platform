@@ -114,22 +114,21 @@ resource "null_resource" "ansible" {
         build_number = "${timestamp()}"
     }
     # Fetch the controller ip from iofog installation to pass to agent configuration
+    # Run ansible playbook against user provided edge nodes to install agents 
     provisioner "local-exec" {
-        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && echo $TF_VAR_controller_ip" 
-    }
-    # Run ansible playbook against user provided edge nodes to install agents
-    provisioner "local-exec" {
-        command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_CREDS\" -i edge_hosts.ini"
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml -i edge_hosts.ini --private-key=${var.ssh_key} -e \"agent_repo=${var.agent_repo} agent_version=${var.agent_version} controller_ip=$TF_VAR_controller_ip\""
     }
     # Fetch Packet agent list
     provisioner "local-exec" { 
         command = "echo Running Agent provisioning on Packet nodes: ${join(",", module.packet_edge_nodes.edge_nodes)}"
     }
+    # Fetch the controller ip from iofog installation to pass to agent configuration
     # Run ansible playbook against packet edge nodes to install agents
     provisioner "local-exec" {
-        command = "ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_CREDS\" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
     }
     depends_on = [
-        "module.iofog"
+        "module.iofog",
+        "module.packet_edge_nodes"
     ]
 }
