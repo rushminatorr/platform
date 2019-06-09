@@ -43,6 +43,7 @@ provider "google-beta" {
 
 provider "packet" {
     version                     = "~> 2.2"
+    auth_token                  = "${file("../packet.token")}"
 }
 
 #############################################################
