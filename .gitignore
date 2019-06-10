@@ -2,6 +2,7 @@
 *tfstate*
 *.zip
 *.retry
+iofogctl_inventory.yaml
 
 *.pyc
 
