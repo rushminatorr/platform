@@ -24,6 +24,9 @@ data "template_file" "iofogctl" {
     }
 }
 resource "null_resource" "export_rendered_template" {
+    triggers {
+        build_number = "${timestamp()}"
+    }
     provisioner "local-exec" {
         command = "cat > iofogctl_inventory.yaml <<EOL\n${join(",\n", data.template_file.iofogctl.*.rendered)}\nEOL"
     }

@@ -109,7 +109,7 @@ resource "null_resource" "iofogctl_deploy" {
         command = "ls ~/.kube/ && ls $HOME/.kube/"
     }
     provisioner "local-exec" {
-        command = "iofogctl deploy -f iofogctl_inventory.yaml"
+        command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
         "module.iofogctl"
