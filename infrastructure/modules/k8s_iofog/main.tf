@@ -5,7 +5,6 @@ variable "controller_image"     {}
 variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
-variable "scheduler_image"      {}
 variable "controller_ip"        {}
 variable "cluster_name"         {}
 variable "kubeconfig"           {}
@@ -24,7 +23,6 @@ resource "null_resource" "iofog" {
         # pass in images as env vars
         environment = {
             CLUSTER_NAME    = "${var.cluster_name}"
-            SCHEDULER_IMG   = "${var.scheduler_image}"
             OPERATOR_IMG    = "${var.operator_image}"
             KUBELET_IMG     = "${var.kubelet_image}"
             CONTROLLER_IMG  = "${var.controller_image}"

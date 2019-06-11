@@ -5,7 +5,6 @@ variable "controller_image"     {}
 variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
-variable "scheduler_image"      {}
 variable "ssh_key"              {}
 variable "agent_version"        {}
 variable "agent_repo"           {}
@@ -77,13 +76,12 @@ module "kubernetes" {
 module "iofogctl" {
     source  = "../../modules/iofogctl"
 
-    scheduler_image             = "${var.scheduler_image}"
     operator_image              = "${var.operator_image}"
     kubelet_image               = "${var.kubelet_image}"
     controller_image            = "${var.controller_image}"
     connector_image             = "${var.connector_image}"
     controller_ip               = "${var.controller_ip}"
-    cluster_name                = "${module.kubernetes.name}"
+    cluster_name                = "${var.environment}"
     ssh_key                     = "${var.ssh_key}"
     template_path               = "${file("../../environments_gke/develop/iofogctl_inventory.tpl")}"
 }
@@ -106,12 +104,10 @@ resource "null_resource" "iofogctl_deploy" {
         command = "gcloud --quiet beta container clusters get-credentials ${var.environment} --region ${var.gcp_region} --project ${var.project_id} && ls ~/.kube/"
     }
     provisioner "local-exec" {
-        command = "ls ~/.kube/ && ls $HOME/.kube/"
-    }
-    provisioner "local-exec" {
         command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
-        "module.iofogctl"
+        "module.iofogctl",
+        "module.kubernetes"
     ]
 }

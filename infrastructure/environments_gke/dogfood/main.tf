@@ -5,7 +5,6 @@ variable "controller_image"     {}
 variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
-variable "scheduler_image"      {}
 variable "ssh_key"              {}
 variable "agent_version"        {}
 variable "agent_repo"           {}
@@ -93,7 +92,6 @@ module "packet_edge_nodes" {
 module "iofog" {
     source  = "../../modules/k8s_iofog"
 
-    scheduler_image             = "${var.scheduler_image}"
     operator_image              = "${var.operator_image}"
     kubelet_image               = "${var.kubelet_image}"
     controller_image            = "${var.controller_image}"
@@ -134,7 +132,7 @@ resource "null_resource" "ansible" {
     # Fetch the controller ip from iofog installation to pass to agent configuration
     # Run ansible playbook against user provided edge nodes to install agents 
     provisioner "local-exec" {
-        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml -i edge_hosts.ini --private-key=${var.ssh_key} -e \"agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_CREDS controller_ip=$TF_VAR_controller_ip\""
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml -i edge_hosts.ini --private-key=${var.ssh_key} -e \"agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_TOKEN controller_ip=$TF_VAR_controller_ip\""
     }
     # Fetch Packet agent list
     provisioner "local-exec" { 
@@ -143,7 +141,7 @@ resource "null_resource" "ansible" {
     # Fetch the controller ip from iofog installation to pass to agent configuration
     # Run ansible playbook against packet edge nodes to install agents
     provisioner "local-exec" {
-        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip package_cloud_creds=$PACKAGE_CLOUD_CREDS agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip package_cloud_creds=$PACKAGE_CLOUD_TOKEN agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
     }
     depends_on = [
         "module.iofog",

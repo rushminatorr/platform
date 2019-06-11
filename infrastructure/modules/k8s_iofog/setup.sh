@@ -80,6 +80,5 @@ TOKEN=$(get_controller_token "$CTRL_IP" 51121)
 
 helm install --name iofog-k8s iofog/iofog-k8s --set-string \
 controller.token="$TOKEN",\
-scheduler.image="$SCHEDULER_IMG",\
 operator.image="$OPERATOR_IMG",\
 kubelet.image="$KUBELET_IMG"
