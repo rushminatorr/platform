@@ -95,14 +95,15 @@ module "iofogctl" {
 # Takes in `package_cloud_creds` to install agent from snapshot repo
 ##########################################################################
 resource "null_resource" "iofogctl_deploy" {
-    triggers {
-        build_number = "${timestamp()}"
-    }
+    # Readd when iofogctl is idempotent
+    # triggers {
+    #     build_number = "${timestamp()}"
+    # }
 
     # use iofogctl to deploy iofoc ecn and configure agents
     # this will use the config template rendered by iofogctl module
     provisioner "local-exec" {
-        command = "iofogctl deploy -f iofogctl_inventory.yaml"
+        command = "ls && ls ~/.kube/ && iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
         "module.iofogctl"
