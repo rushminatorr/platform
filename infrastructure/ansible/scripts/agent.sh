@@ -439,7 +439,7 @@ do_install() {
 		do_install_iofog_dev 
 		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	else
-		do_install_iofog_dev 
+		do_install_iofog
 		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	fi
 }

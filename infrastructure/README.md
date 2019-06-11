@@ -37,9 +37,9 @@ As a user, you can switch to the environments_gke directory to find a user folde
 In the user directory, run:
 
 1. *terraform init* to initialize your terraform directory
-2. *terraform plan -var-file="vars-dev.tfvars"* pass in your vars file
-3. *terraform apply -var-file="vars-dev.tfvars" -auto-approve* apply will create your resources
-4. *terraform destroy -var-file="vars-dev.tfvars" -auto-approve* use the destroy command to delete all your resources
+2. *terraform plan -var-file="vars.tfvars"* pass in your vars file
+3. *terraform apply -var-file="vars.tfvars" -auto-approve* apply will create your resources
+4. *terraform destroy -var-file="vars.tfvars" -auto-approve* use the destroy command to delete all your resources
 
 | Variables              | Description                                                  |
 | -----------------------|:------------------------------------------------------------:|
@@ -81,6 +81,6 @@ If you plan to use snapshot repo, you will need to provide package cloud token, 
 
 - Kubeconfig for gke cluster: `gcloud container clusters get-credentials <<CLUSTER_NAME>> --region <<REGION>>`
 
-- Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars-develop.tfvars -auto-approve`
+- Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars.tfvars -auto-approve`
 
 - Terraform OUtput `terraform output -module=packet_edge_nodes`

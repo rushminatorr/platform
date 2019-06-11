@@ -11,7 +11,7 @@
   gather_facts: true
   tasks:
     - name: Begin!
-      command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }} {{ package_cloud_creds }} "
+      command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }}"
       register: echo
 
     - debug: var=echo.stdout_lines
