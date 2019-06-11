@@ -8,7 +8,6 @@ controller_ip       = "35.233.155.125" # Static ip for loadbalancer, eompty is f
 # iofog images
 controller_image    = "gcr.io/focal-freedom-236620/controller:1.0.38"
 connector_image     = "gcr.io/focal-freedom-236620/connector:1.0.4"
-scheduler_image     = "gcr.io/focal-freedom-236620/scheduler:f87af"
 operator_image      = "gcr.io/focal-freedom-236620/operator:rc-1.0.0"
 kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-1.0.0"
 

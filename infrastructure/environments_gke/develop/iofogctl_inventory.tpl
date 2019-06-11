@@ -5,7 +5,6 @@ controllers:
     controller_ip: "${controller_ip}"
     controller_image: "${controller_image}"
     connector_image: "${connector_image}"
-    scheduler_image: "${scheduler_image}"
     operator_image: "${operator_image}"
     kubelet_image: "${kubelet_image}"
 agents:
