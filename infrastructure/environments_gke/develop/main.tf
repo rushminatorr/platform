@@ -103,7 +103,13 @@ resource "null_resource" "iofogctl_deploy" {
     # use iofogctl to deploy iofoc ecn and configure agents
     # this will use the config template rendered by iofogctl module
     provisioner "local-exec" {
-        command = "ls && ls ~/.kube/ && iofogctl deploy -f iofogctl_inventory.yaml"
+        command = "kubectl get config"
+    }
+    provisioner "local-exec" {
+        command = "ls ~/.kube/ && ls $HOME/.kube/"
+    }
+    provisioner "local-exec" {
+        command = "iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
         "module.iofogctl"
