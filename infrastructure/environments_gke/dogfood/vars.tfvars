@@ -6,7 +6,7 @@ gcp_region          = "us-west1"
 # iofog vars
 controller_ip       = "34.83.163.65" # Static ip for loadbalancer, eompty is fine.
 # iofog images
-controller_image    = "gcr.io/focal-freedom-236620/controller:1.0.38"
+controller_image    = "gcr.io/focal-freedom-236620/controller:1cb99"
 connector_image     = "gcr.io/focal-freedom-236620/connector:1.0.4"
 operator_image      = "gcr.io/focal-freedom-236620/operator:rc-1.0.0"
 kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-1.0.0"
