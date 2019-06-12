@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e
+set -x
 
 SUPPORT_MAP="
 x86_64-centos-7
@@ -61,7 +62,7 @@ check_forked() {
 	if command_exists lsb_release; then
 		# Check if the `-u` option is supported
 		set +e
-		lsb_release -a -u > /dev/null 2>&1
+		lsb_release -a -u
 		lsb_release_exit_code=$?
 		set -e
 
@@ -109,7 +110,7 @@ check_forked() {
 }
 
 command_exists() {
-	command -v "$@" > /dev/null 2>&1
+	command -v "$@"
 }
 
 check_command_status() {
@@ -164,7 +165,7 @@ add_initial_apt_repos_if_not_exist() {
 			fi
 			;;
 	esac
-	$sh_c 'apt-get update -qq >/dev/null'
+	$sh_c 'apt-get update -qq'
 }
 
 do_install_java() {
@@ -189,11 +190,11 @@ do_install_java() {
 		cd /opt/jdk1.8.0_211/	
 		case "$lsb_dist" in
 			debian|raspbian|ubuntu)
-				$sh_c "update-alternatives --install /usr/bin/java java /opt/jdk1.8.0_211/bin/java 1100 >/dev/null"
+				$sh_c "update-alternatives --install /usr/bin/java java /opt/jdk1.8.0_211/bin/java 1100"
 				command_status=$?
 				;;		
 			fedora|centos)
-				$sh_c "alternatives --install /usr/bin/java java /opt/jdk1.8.0_211/bin/java 4 >/dev/null"
+				$sh_c "alternatives --install /usr/bin/java java /opt/jdk1.8.0_211/bin/java 4"
 				command_status=$?
 				;;
 		esac
@@ -212,7 +213,7 @@ handle_docker_unsuccessful_installation() {
 	if ! command_exists docker; then
 		# for fedora 28
 		if [ "$lsb_dist" == "fedora" ] && [ "$dist_version" == "28" ]; then
-			$sh_c "dnf -y -q install https://download.docker.com/linux/fedora/27/x86_64/stable/Packages/docker-ce-18.03.1.ce-1.fc27.x86_64.rpm >/dev/null 2>&1"
+			$sh_c "dnf -y -q install https://download.docker.com/linux/fedora/27/x86_64/stable/Packages/docker-ce-18.03.1.ce-1.fc27.x86_64.rpm"
 		fi	
 	fi
 }
@@ -220,10 +221,10 @@ handle_docker_unsuccessful_installation() {
 start_docker() {
 	# check if docker is running
 	if [ ! -f /var/run/docker.pid ]; then
-		$sh_c "/etc/init.d/docker start >/dev/null 2>&1"
+		$sh_c "/etc/init.d/docker start"
 		command_status=$?
 		if [ $command_status -ne 0 ]; then
-			$sh_c "service docker start >/dev/null 2>&1"
+			$sh_c "service docker start"
 			command_status=$?
 		fi
 	else
@@ -262,21 +263,21 @@ do_install_iofog() {
 	set -x
 	case "$lsb_dist" in
 		ubuntu)
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash" >/dev/null
-			$sh_c "apt-get install -y -qq iofog-agent-dev >/dev/null"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash"
+			$sh_c "apt-get install -y iofog-agent-dev"
 			command_status=$?
 			;;
 		fedora|centos)
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.rpm.sh | $sh_c "bash" >/dev/null
-			$sh_c "yum install -y -q iofog-agent-dev"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.rpm.sh | $sh_c "bash"
+			$sh_c "yum install -y iofog-agent-dev"
 			command_status=$?
 			;;
 		debian|raspbian)
 			if [ "$lsb_dist" = "debian" ]; then
-				$sh_c "apt-get install -y -qq net-tools >/dev/null"
+				$sh_c "apt-get install -y -qq net-tools"
 			fi
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash" >/dev/null
-			$sh_c "apt-get install -y -qq iofog-agent-dev >/dev/null"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash"
+			$sh_c "apt-get install -y iofog-agent-dev"
 			command_status=$?
 			if [ "$lsb_dist" = "raspbian" ]; then
 				$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
@@ -297,21 +298,21 @@ do_install_iofog_dev() {
 	set -x
 	case "$lsb_dist" in
 		ubuntu)
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token | $sh_c "bash" >/dev/null
-			$sh_c "apt-get install -y -qq iofog-agent="$version" >/dev/null"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token | $sh_c "bash"
+			$sh_c "apt-get install -y iofog-agent="$version""
 			command_status=$?
 			;;
 		fedora|centos)
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.rpm.sh$token  | $sh_c "bash" >/dev/null
-			$sh_c "yum install -y -q iofog-agent-"$version"-1.noarch"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.rpm.sh$token  | $sh_c "bash"
+			$sh_c "yum install -y iofog-agent-"$version"-1.noarch"
 			command_status=$?
 			;;
 		debian|raspbian)
 			if [ "$lsb_dist" = "debian" ]; then
-				$sh_c "apt-get install -y -qq net-tools >/dev/null"
+				$sh_c "apt-get install -y -qq net-tools"
 			fi
-			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token  | $sh_c "bash" >/dev/null
-			$sh_c "apt-get install -y -qq iofog-agent="$version" >/dev/null"
+			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token  | $sh_c "bash"
+			$sh_c "apt-get install -y iofog-agent="$version""
 			command_status=$?
 			if [ "$lsb_dist" = "raspbian" ]; then
 				$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
@@ -409,7 +410,7 @@ do_install() {
 
 		EOF
 		exit 1
-	elif ! echo "$SUPPORT_MAP" | grep "$(uname -m)-$lsb_dist-$dist_version" >/dev/null; then
+	elif ! echo "$SUPPORT_MAP" | grep "$(uname -m)-$lsb_dist-$dist_version"; then
 		cat >&2 <<-'EOF'
 
 		Either your platform is not easily detectable or is not supported by this
@@ -443,6 +444,10 @@ do_install() {
 		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	fi
 }
+
+# Remove previous installs
+sudo apt remove -y --purge iofog-agent || true
+sudo apt remove -y --purge iofog-agent-dev || true
 
 env="$1"
 version="$2"
