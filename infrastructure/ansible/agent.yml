@@ -1,0 +1,86 @@
+######################################################
+# Ansible Playbook to setup and configure iofog Agent
+######################################################
+---
+- hosts: all
+  remote_user: root
+  port: 22
+  become: true
+  vars: 
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+  gather_facts: true
+  tasks:
+    - name: Begin!
+      command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, token {{ package_cloud_creds }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }}"
+      register: echo
+
+    - debug: var=echo.stdout_lines
+
+    - name: Hack workaround for installing non authenticated packages
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+
+    - name: Install prerequisites
+      apt: name={{item}} update_cache=no
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - jq
+      register: aptoutput
+
+    - debug: var=aptoutput
+
+    - name: Copy install script to Agent
+      copy:
+        src: scripts/agent.sh
+        dest: /opt/agent.sh
+        mode: 755
+
+    - name: Execute install script
+      shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
+      register: install_agent
+
+    - debug: var=install_agent.stdout_lines
+
+    - name: Start iofog Agent
+      shell: sudo service iofog-agent start
+
+    - name: Configure Agent frequency
+      shell: iofog-agent config -cf 10 -sf 10
+      register: freq
+
+    - debug: var=freq.stdout
+
+    - name: Initializing Agent
+      command: echo "Initializing Agent"
+
+    - name: Copy wait script to Agent
+      copy:
+        src: scripts/wait-for-agent.sh
+        dest: wait-for-agent.sh
+        mode: 755
+
+    - name: Wait for agent
+      shell: ./wait-for-agent.sh
+      register: wait_agent
+
+    - debug: var=wait_agent.stdout_lines
+
+    - name: Change Controller URL
+      shell: iofog-agent config -a http://"{{ controller_ip }}":51121/api/v3/
+      register: url
+
+    - debug: var=url.stdout_lines
+
+    - name: Copy setup script to Agent
+      copy:
+        src: scripts/init.sh
+        dest: init.sh
+        mode: 755
+
+    - name: Run the Agent setup
+      shell: ./init.sh http://"{{ controller_ip }}":51121/api/v3 {{ ansible_hostname }}
+      register: setup
+
+    - debug: var=setup.stdout_lines    
