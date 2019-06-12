@@ -1,0 +1,17 @@
+controllers:
+- name: "gcr.io/focal-freedom-236620/scheduler:2b1e1"
+  kubeconfig: "/Users/rashmi/.kube/config"
+  images:
+    controller_ip: "35.233.155.125"
+    controller_image: "gcr.io/focal-freedom-236620/controller:1.0.38"
+    connector_image: "gcr.io/focal-freedom-236620/connector:1.0.4"
+    scheduler_image: "gcr.io/focal-freedom-236620/scheduler:2b1e1"
+    operator_image: "gcr.io/focal-freedom-236620/operator:rc-latest"
+    kubelet_image: "gcr.io/focal-freedom-236620/kubelet:rc-latest"
+agents:
+- name: raspberrypi-develop
+  user: root
+  host: 207.135.70.110
+  port: 55505
+  keyfile: "/Users/rashmi/.ssh/azure"
+microservices: []
