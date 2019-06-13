@@ -70,6 +70,21 @@ module "kubernetes" {
     service_account             = "azure-gcr@focal-freedom-236620.iam.gserviceaccount.com"
 }
 
+#############################################################
+# Spin up edge nodes on Packet
+#############################################################
+module "packet_edge_nodes" {
+    source  = "../../modules/packet_edge_nodes"
+
+    project_id                  = "${var.packet_project_id}"
+    operating_system            = "${var.operating_system}"
+    facility                    = "${var.packet_facility}"
+    count_x86                   = "${var.count_x86}"
+    plan_x86                    = "${var.plan_x86}"
+    count_arm                   = "${var.count_arm}"
+    plan_arm                    = "${var.plan_arm}"
+    environment                 = "${var.environment}"
+}
 
 #############################################################
 # Install iofog on gke cluster using helm and install scripts 
