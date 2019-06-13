@@ -108,7 +108,6 @@ module "iofogctl_template" {
 # Expects env variable PACKAGE_CLOUD_CREDS populated to pass to iofogctl
 ##########################################################################
 resource "null_resource" "iofogctl_deploy" {
-    Readd when iofogctl is idempotent
     triggers {
         build_number = "${timestamp()}"
     }
