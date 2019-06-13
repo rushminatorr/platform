@@ -13,9 +13,4 @@ agents:
   host: 207.135.70.110
   port: 55504
   keyfile: "${ssh_key}"
-- name: deepcam
-  user: root
-  host: 207.135.70.110
-  port: 55507
-  keyfile: "${ssh_key}"
 microservices: []
