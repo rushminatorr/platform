@@ -5,13 +5,17 @@ controllers:
     controller_ip: "${controller_ip}"
     controller_image: "${controller_image}"
     connector_image: "${connector_image}"
-    scheduler_image: "${scheduler_image}"
     operator_image: "${operator_image}"
     kubelet_image: "${kubelet_image}"
 agents:
-- name: raspberrypi-develop
+- name: nano
   user: root
   host: 207.135.70.110
-  port: 55505
+  port: 55504
+  keyfile: "${ssh_key}"
+- name: deepcam
+  user: root
+  host: 207.135.70.110
+  port: 55507
   keyfile: "${ssh_key}"
 microservices: []

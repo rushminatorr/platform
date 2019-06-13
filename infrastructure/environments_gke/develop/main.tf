@@ -70,20 +70,21 @@ module "kubernetes" {
     service_account             = "azure-gcr@focal-freedom-236620.iam.gserviceaccount.com"
 }
 
+
 #############################################################
-# Iofogctl to install iofog and configure agents 
+# Install iofog on gke cluster using helm and install scripts 
 #############################################################
-module "iofogctl" {
-    source  = "../../modules/iofogctl"
+module "iofog" {
+    source  = "../../modules/k8s_iofog"
 
     operator_image              = "${var.operator_image}"
     kubelet_image               = "${var.kubelet_image}"
     controller_image            = "${var.controller_image}"
     connector_image             = "${var.connector_image}"
     controller_ip               = "${var.controller_ip}"
-    cluster_name                = "${var.environment}"
-    ssh_key                     = "${var.ssh_key}"
-    template_path               = "${file("../../environments_gke/develop/iofogctl_inventory.tpl")}"
+    cluster_name                = "${module.kubernetes.name}"
+    kubeconfig                  = "${module.kubernetes.kubeconfig}"
+    script_path                 = "../../modules/k8s_iofog/setup.sh"
 }
 
 ##########################################################################
@@ -92,22 +93,26 @@ module "iofogctl" {
 # Expects env variable PACKAGE_CLOUD_CREDS populated to pass to ansible
 # Takes in `package_cloud_creds` to install agent from snapshot repo
 ##########################################################################
-resource "null_resource" "iofogctl_deploy" {
-    # Readd when iofogctl is idempotent
-    # triggers {
-    #     build_number = "${timestamp()}"
-    # }
-
-    # use iofogctl to deploy iofoc ecn and configure agents
-    # this will use the config template rendered by iofogctl module
-    provisioner "local-exec" {
-        command = "gcloud --quiet beta container clusters get-credentials ${var.environment} --region ${var.gcp_region} --project ${var.project_id} && ls ~/.kube/"
+resource "null_resource" "ansible" {
+    triggers {
+        build_number = "${timestamp()}"
     }
+    # Fetch the controller ip from iofog installation to pass to agent configuration
+    # Run ansible playbook against user provided edge nodes to install agents 
     provisioner "local-exec" {
-        command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml -i edge_hosts.ini --private-key=${var.ssh_key} -e \"agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_TOKEN controller_ip=$TF_VAR_controller_ip\""
+    }
+    # Fetch Packet agent list
+    provisioner "local-exec" { 
+        command = "echo Running Agent provisioning on Packet nodes: ${join(",", module.packet_edge_nodes.edge_nodes)}"
+    }
+    # Fetch the controller ip from iofog installation to pass to agent configuration
+    # Run ansible playbook against packet edge nodes to install agents
+    provisioner "local-exec" {
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip package_cloud_creds=$PACKAGE_CLOUD_TOKEN agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
     }
     depends_on = [
-        "module.iofogctl",
-        "module.kubernetes"
+        "module.iofog",
+        "module.packet_edge_nodes"
     ]
 }

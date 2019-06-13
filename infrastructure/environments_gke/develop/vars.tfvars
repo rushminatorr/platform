@@ -22,5 +22,5 @@ plan_arm            = "c2.large.arm"
 
 # used by ansible for agent configuration
 ssh_key             = "~/.ssh/azure"
-agent_version       = "1.0.14.881"
+agent_version       = "1.0.14-b1245"
 agent_repo          = "dev"

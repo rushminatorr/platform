@@ -4,7 +4,7 @@ environment         = "dogfood"
 gcp_region          = "us-west1"
 
 # iofog vars
-controller_ip       = "34.83.163.65" # Static ip for loadbalancer, eompty is fine.
+controller_ip       = "34.83.163.65" # Static ip for loadbalancer, empty is fine.
 # iofog images
 controller_image    = "gcr.io/focal-freedom-236620/controller:1cb99"
 connector_image     = "gcr.io/focal-freedom-236620/connector:1.0.4"
@@ -22,5 +22,5 @@ plan_arm            = "c2.large.arm"
 
 # used by ansible for agent configuration
 ssh_key             = "~/.ssh/azure"
-agent_version       = "1.0.14.881"
+agent_version       = "1.0.14-b1245"
 agent_repo          = "dev"
