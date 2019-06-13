@@ -10,60 +10,60 @@
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
   gather_facts: true
   tasks:
-    # - name: Begin!
-    #   command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, token {{ package_cloud_creds }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }}"
-    #   register: echo
+    - name: Begin!
+      command: echo "Beginning install of iofogAgent software on {{ ansible_hostname }} with controllerip {{ controller_ip }}, token {{ package_cloud_creds }}, agent_rep {{ agent_repo }}, agent_version {{ agent_version }}"
+      register: echo
 
-    # - debug: var=echo.stdout_lines
+    - debug: var=echo.stdout_lines
 
-    # - name: Hack workaround for installing non authenticated packages
-    #   copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
+    - name: Hack workaround for installing non authenticated packages
+      copy: content='APT::Get::AllowUnauthenticated "true";' dest=/etc/apt/apt.conf.d/99temp owner=root group=root mode=0644
 
-    # - name: Install prerequisites
-    #   apt: name={{item}} update_cache=no
-    #   with_items:
-    #     - apt-transport-https
-    #     - ca-certificates
-    #     - curl
-    #     - software-properties-common
-    #     - jq
-    #   register: aptoutput
+    - name: Install prerequisites
+      apt: name={{item}} update_cache=no
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - software-properties-common
+        - jq
+      register: aptoutput
 
-    # - debug: var=aptoutput
+    - debug: var=aptoutput
 
-    # - name: Copy install script to Agent
-    #   copy:
-    #     src: scripts/agent.sh
-    #     dest: /opt/agent.sh
-    #     mode: 755
+    - name: Copy install script to Agent
+      copy:
+        src: scripts/agent.sh
+        dest: /opt/agent.sh
+        mode: 755
 
-    # - name: Execute install script
-    #   shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
-    #   register: install_agent
+    - name: Execute install script
+      shell: /opt/agent.sh "{{ agent_repo }}" "{{ agent_version }}" "{{ package_cloud_creds }}"
+      register: install_agent
 
-    # - debug: var=install_agent.stdout_lines
+    - debug: var=install_agent.stdout_lines
 
-    # - name: Start iofog Agent
-    #   shell: sudo service iofog-agent start
+    - name: Start iofog Agent
+      shell: sudo service iofog-agent start
 
-    # - name: Configure Agent frequency
-    #   shell: iofog-agent config -cf 10 -sf 10
-    #   register: freq
+    - name: Configure Agent frequency
+      shell: iofog-agent config -cf 10 -sf 10
+      register: freq
 
-    # - debug: var=freq.stdout
+    - debug: var=freq.stdout
 
-    # - name: Initializing Agent
-    #   command: echo "Initializing Agent"
+    - name: Initializing Agent
+      command: echo "Initializing Agent"
 
-    # - name: Copy wait script to Agent
-    #   copy:
-    #     src: scripts/wait-for-agent.sh
-    #     dest: wait-for-agent.sh
-    #     mode: 755
+    - name: Copy wait script to Agent
+      copy:
+        src: scripts/wait-for-agent.sh
+        dest: wait-for-agent.sh
+        mode: 755
 
-    # - name: Wait for agent
-    #   shell: ./wait-for-agent.sh
-    #   register: wait_agent
+    - name: Wait for agent
+      shell: ./wait-for-agent.sh
+      register: wait_agent
 
     - debug: var=wait_agent.stdout_lines
 
