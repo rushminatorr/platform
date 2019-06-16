@@ -233,12 +233,20 @@ start_docker() {
 }
 
 do_install_docker() {
+	# Check that Docker 18.09.2 or greater is installed
+	if command_exists docker; then
+		docker_version=$(docker -v | sed 's/.*version \(.*\),.*/\1/' | tr -d '.')
+		if [ "$docker_version" -ge 18092 ]; then
+			echo "# Docker $docker_version already installed"
+			return
+		fi
+	fi
 	echo "# Installing Docker..."
 	echo
 	sleep 3
 	set -x
 	curl -fsSL https://get.docker.com/ | sh
-	
+
 	handle_docker_unsuccessful_installation
 	start_docker
 
@@ -255,6 +263,21 @@ do_install_docker() {
 	fi
 	
 	set +x
+}
+
+do_uninstall_iofog() {
+	if command_exists iofog-agent; then
+		case "$lsb_dist" in
+			ubuntu|debian|raspian)
+				sudo apt remove -y --purge iofog-agent || true
+				sudo apt remove -y --purge iofog-agent-dev || true
+				;;
+			fedora|centos)
+				yum remove -y iofog-agent || true
+				yum remove -y iofog-agent-dev || true
+				;;
+		esac
+	fi
 }
 
 do_install_iofog() {
@@ -435,7 +458,9 @@ do_install() {
 	do_install_docker
 	check_command_status $command_status "# Docker has been installed successfully" "# Docker installation failed. Please proceed with installation manually" "# Docker is already installed"
 	
-	if [ "$env" = "dev" ] 
+	do_uninstall_iofog
+
+	if [ "$env" = "dev" ]
 	then
 		do_install_iofog_dev 
 		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
@@ -444,10 +469,6 @@ do_install() {
 		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	fi
 }
-
-# Remove previous installs
-sudo apt remove -y --purge iofog-agent || true
-sudo apt remove -y --purge iofog-agent-dev || true
 
 env="$1"
 version="$2"
