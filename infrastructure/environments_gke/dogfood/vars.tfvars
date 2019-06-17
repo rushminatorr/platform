@@ -6,10 +6,10 @@ gcp_region          = "us-west1"
 # iofog vars
 controller_ip       = "34.83.163.65" # Static ip for loadbalancer, empty is fine.
 # iofog images
-controller_image    = "gcr.io/focal-freedom-236620/controller:7ffe5"
-connector_image     = "gcr.io/focal-freedom-236620/connector:rc-1.0.4"
-operator_image      = "gcr.io/focal-freedom-236620/operator:rc-latest"
-kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-latest"
+controller_image    = "gcr.io/focal-freedom-236620/controller:a4f14"
+connector_image     = "gcr.io/focal-freedom-236620/connector:1.0.4"
+operator_image      = "gcr.io/focal-freedom-236620/operator:rc-1.0.0"
+kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-1.0.0"
 
 #packet vars used to setup edge nodes in arm or x86
 packet_project_id   = "880125b9-d7b6-43c3-99f5-abd1af3ce879"
