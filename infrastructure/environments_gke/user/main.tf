@@ -22,6 +22,12 @@ variable "packet_facility"      {
     type = "list"
 }
 
+# iofog user vars
+variable "iofogUser_name"       {}
+variable "iofogUser_surname"    {}
+variable "iofogUser_email"      {}
+variable "iofogUser_password"   {}
+
 provider "google" {
     version                     = "~> 2.7.0"
     project                     = "${var.project_id}"
@@ -91,6 +97,10 @@ module "iofog" {
     controller_ip               = "${var.controller_ip}"
     cluster_name                = "${module.kubernetes.name}"
     kubeconfig                  = "${module.kubernetes.kubeconfig}"
+    iofogUser_name              = "${var.iofogUser_name}"
+    iofogUser_surname           = "${var.iofogUser_surname}"
+    iofogUser_email             = "${var.iofogUser_email}"
+    iofogUser_password           = "${var.iofogUser_password}"
     script_path                 = "../../modules/k8s_iofog/setup.sh"
 }
 

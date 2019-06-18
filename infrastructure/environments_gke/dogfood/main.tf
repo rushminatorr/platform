@@ -21,6 +21,11 @@ variable "plan_arm"             {}
 variable "packet_facility"      {
     type = "list"
 }
+# iofog user vars
+variable "iofogUser_name"       {}
+variable "iofogUser_surname"    {}
+variable "iofogUser_email"      {}
+variable "iofogUser_password"   {}
 
 # Store terraform state in GCS backend
 terraform {
@@ -99,6 +104,10 @@ module "iofogctl_template" {
     controller_ip               = "${var.controller_ip}"
     cluster_name                = "${var.environment}"
     ssh_key                     = "${var.ssh_key}"
+    iofogUser_name              = "${var.iofogUser_name}"
+    iofogUser_surname           = "${var.iofogUser_surname}"
+    iofogUser_email             = "${var.iofogUser_email}"
+    iofogUser_password           = "${var.iofogUser_password}"
     template_path               = "${file("../../environments_gke/dogfood/iofogctl_inventory.tpl")}"
 }
 

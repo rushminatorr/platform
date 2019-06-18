@@ -2,12 +2,18 @@ controllers:
 - name: "${cluster_name}"
   kubeconfig: "~/.kube/config"
   kubecontrollerip: "${controller_ip}"
+  iofogUser:
+      Name: "${iofogUser_name}"
+      Surname: "${iofogUser_surname}"
+      Email: "${iofogUser_email}"
+      Password: "${iofogUser_password}"
   images:
-    controller: "${controller_image}"
-    connector:  "${connector_image}"
-    scheduler: "iofog/iofog-scheduler:develop"
-    operator: "${operator_image}"
-    kubelet: "${kubelet_image}"
+    controller_ip: "${controller_ip}"
+    controller_image: "${controller_image}"
+    connector_image: "${connector_image}"
+    scheduler_image: "${scheduler_image}"
+    operator_image: "${operator_image}"
+    kubelet_image: "${kubelet_image}"
 agents:
 - name: nano
   user: root

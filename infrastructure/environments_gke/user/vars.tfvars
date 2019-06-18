@@ -24,3 +24,9 @@ plan_arm            = "c2.large.arm"
 ssh_key             = "~/.ssh/azure"
 agent_version       = "1.0.14-b1245"
 agent_repo          = "dev"
+
+# iofog user vars
+iofogUser_name      = "rush"
+iofogUser_surname   = "edgeworx"          
+iofogUser_email     = "rush@edgeworx.io"          
+iofogUser_password  = ""     
