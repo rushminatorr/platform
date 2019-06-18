@@ -1,7 +1,7 @@
 controllers:
 - name: "${cluster_name}"
   kubeconfig: "~/.kube/config"
-  kubecontrollerip: "${controller_ip}"
+  kubeControllerIP: "${controller_ip}"
   iofogUser:
       Name: "${iofogUser_name}"
       Surname: "${iofogUser_surname}"
