@@ -1,12 +1,12 @@
 controllers:
 - name: "${cluster_name}"
   kubeconfig: "~/.kube/config"
-  kubeControllerIP: "${controller_ip}"
-  iofogUser:
-      Name: "${iofogUser_name}"
-      Surname: "${iofogUser_surname}"
-      Email: "${iofogUser_email}"
-      Password: "${iofogUser_password}"
+  kubecontrollerip: "${controller_ip}"
+  iofoguser:
+      name: "${iofogUser_name}"
+      surname: "${iofogUser_surname}"
+      email: "${iofogUser_email}"
+      password: "${iofogUser_password}"
   images:
     controller_image: "${controller_image}"
     connector_image: "${connector_image}"

@@ -54,7 +54,7 @@ In the user directory, run:
 | `controller_ip`        | *list of edge ips, comma separated to install agent on*      |
 | `ssh_key`              | *path to ssh key to be used for accessing edge nodes*        |
 | `agent_repo`           | *use `dev` for snapshot repo, else leave empty*              |
-| `agent_version`        | *populate if using dev snapshot repo for agent software      |
+| `agent_version`        | *populate if using dev snapshot repo for agent software*     |
 | `packet_project_id`    | *packet project id to spin reposrces on packet*              |
 | `operating_system`     | *operating system for edge nodes on packet*                  |
 | `packet_facility`      | *facilities to use to drop agents*                           |
@@ -62,7 +62,11 @@ In the user directory, run:
 | `plan_x86`             | *server plan for device on x86 available on facility chosen* |
 | `count_arm`            | *number of arm sgents to spin up*                            |
 | `plan_arm`             | *server plan for device on arm available on facility chosen* |
-
+| `iofogUser_name`       | *name for registration with controller*                      |
+| `iofogUser_surname`    | *surname for registration with controller*                   |
+| `iofogUser_email`      | *email to use to register with controller*                   |
+| `iofogUser_password`   | *password for user registeration with controller*            |
+    
 ## Ansible Playbook for Agent Configuration
 
 We use ansible to configure edge nodes with Agent software. You can provide an inventory with the remote hosts details to provision agents. See sample inventory `edge_hosts.ini`. 
