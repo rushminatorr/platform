@@ -3,15 +3,15 @@ controllers:
   kubeconfig: "~/.kube/config"
   kubecontrollerip: "${controller_ip}"
   iofoguser:
-      name: "${iofogUser_name}"
-      surname: "${iofogUser_surname}"
-      email: "${iofogUser_email}"
-      password: "${iofogUser_password}"
+    name: "${iofogUser_name}"
+    surname: "${iofogUser_surname}"
+    email: "${iofogUser_email}"
+    password: "${iofogUser_password}"
   images:
-    controller_image: "${controller_image}"
-    connector_image: "${connector_image}"
-    operator_image: "${operator_image}"
-    kubelet_image: "${kubelet_image}"
+    controller: "${controller_image}"
+    connector: "${connector_image}"
+    operator: "${operator_image}"
+    kubelet: "${kubelet_image}"
 agents:
 - name: raspberrypi-develop
   user: root
