@@ -2,9 +2,5 @@
 *tfstate*
 *.zip
 *.retry
-
-*.pyc
-
+iofogctl_inventory.yaml
 .idea/
-
-id_ecdsa*

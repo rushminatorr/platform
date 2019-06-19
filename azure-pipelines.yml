@@ -1,59 +1,72 @@
-trigger:
-- master
-- develop
+variables:
+  group: 'pipelines'
 
 pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- task: UsePythonVersion@0
+- bash: |
+    ls
+    curl -s https://$(iofogctl-snapshot-packagecloud-token):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
+    sudo apt-get install iofogctl=0.0.3-b1504
+    iofogctl version
+  displayName: 'Install iofogctl'
+
+- task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
   inputs:
-    versionSpec: '2.7'
-    architecture: 'x64'
+    terraformVersion: 0.11.14
+  displayName: 'Install Terraform'
 
-- script: |
-    pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install Python requirements'
+- task: DownloadSecureFile@1
+  displayName: 'Download secure file'
+  inputs:
+    secureFile: 'azure-gcp.json'
 
-#- script: |
-#    python cli.py up iofog --local
-#  displayName: 'Deploy ioFog locally'
+- bash: |
+    repo=$(lsb_release -c -s)
+    echo $repo
+    echo "deb http://packages.cloud.google.com/apt $repo main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    sudo apt-get update && sudo apt-get install google-cloud-sdk
 
-- script: |
-    echo $(gcp.svcacc) | docker login -u _json_key --password-stdin https://gcr.io
-  displayName: 'Docker connect to Registry'
+    gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
+    gcloud --quiet config set project focal-freedom-236620
+  displayName: 'set up gcloud'
 
-- script: |
-    sed -i "s|controller\:.*|controller: \"$(images.controller)\"|g" plugins/iofog/config.yml
-    sed -i "s|connector\:.*|connector: \"$(images.connector)\"|g" plugins/iofog/config.yml
-    sed -i "s|scheduler\:.*|scheduler: \"$(images.scheduler)\"|g" plugins/iofog/config.yml
-    sed -i "s|operator\:.*|operator: \"$(images.operator)\"|g" plugins/iofog/config.yml
-    sed -i "s|kubelet\:.*|kubelet: \"$(images.kubelet)\"|g" plugins/iofog/config.yml
-    sed -i "s|runner\:.*|runner: \"$(images.runner)\"|g" plugins/iofog/config.yml
-    cat plugins/iofog/config.yml
-  displayName: 'Set ioFog images'
+- task: DownloadSecureFile@1 
+  inputs:
+    secureFile: 'azure_ssh_key'
+  displayName: 'Download secure file for ssh access for agents'
 
-- script: |
-    echo $(gcp.svc) > plugins/gcp/creds/svcacc.json
-    cat plugins/gcp/creds/svcacc.json
-    python cli.py up gcp --bootstrap=true
-  displayName: 'Deploy GCP Cluster and Agents'
+- task: DownloadSecureFile@1
+  inputs:
+    secureFile: packet.token
+  displayName: 'Download secure file for packet provider authentication'
 
-- script: |
-    python cli.py up iofog --bootstrap=true
-  displayName: 'Deploy ioFog Kubernetes and ioFog Agents'
+- bash: |
+    echo 'change ssh key file permissions'
+    chmod 400 $(Agent.TempDirectory)/azure_ssh_key
+    echo 'move packet file to appropriate directory'
+    cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/packet.token
+    echo 'Running Terraform init...'
+    terraform init
+  workingDirectory: '$(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/develop'
+  displayName: 'Terraform Init'
 
-- script: |
-    python cli.py up weather
-    python cli.py test weather
-  displayName: 'Test Kubernetes APIs'
+- bash: |
+    echo 'set package cloud token as env var needed for agent installation'
+    export PACKAGE_CLOUD_TOKEN=$(package_cloud_credentials)
+    
+    echo 'Running Terraform apply...'
+    terraform apply -var-file=vars.tfvars -var ssh_key=$(Agent.TempDirectory)/azure_ssh_key -auto-approve
+  workingDirectory: '$(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/develop'
+  displayName: 'Terraform Apply'
 
-- script: |
-    python cli.py test iofog
-  displayName: 'Test ioFog APIs'
+- task: DownloadSecureFile@1
+  displayName: 'Download secure file - healthcare microservice app config'
+  inputs:
+    secureFile: 'develop-msv-config.yaml'
 
-- script: |
-    python cli.py down gcp
-  displayName: 'Tear GCP down'
-  condition: always()
+- bash: './install.sh $(Agent.TempDirectory)/develop-msv-config.yaml'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/_Edgeworx_ProductDemos'
+  displayName: 'Deploy microservice'
