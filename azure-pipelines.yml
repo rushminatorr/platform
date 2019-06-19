@@ -7,7 +7,7 @@ pool:
 steps:
 - bash: |
     ls
-    echo $(iofogctl-snapshot-packagecloud-token)
+    echo $(iofogctlPackageCloudToken)
     curl -s https://$(iofogctl-snapshot-packagecloud-token):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
     sudo apt-get install iofogctl=0.0.3-b1504
     iofogctl version
