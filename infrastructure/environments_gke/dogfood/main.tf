@@ -127,9 +127,6 @@ resource "null_resource" "iofogctl_deploy" {
         command = "gcloud --quiet beta container clusters get-credentials ${var.environment} --region ${var.gcp_region} --project ${var.project_id} && ls ~/.kube/"
     }
     provisioner "local-exec" {
-        command = "echo ${var.iofogUser_password}"
-    }
-    provisioner "local-exec" {
         command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
