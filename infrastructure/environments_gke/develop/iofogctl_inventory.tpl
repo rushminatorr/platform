@@ -12,5 +12,10 @@ controllers:
     connector: "${connector_image}"
     operator: "${operator_image}"
     kubelet: "${kubelet_image}"
-agents: []
+agents:
+- name: raspberrypi-develop
+  user: root
+  host: 207.135.70.110
+  port: 55505
+  keyfile: "${ssh_key}"
 microservices: []

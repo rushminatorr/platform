@@ -21,6 +21,11 @@ variable "plan_arm"             {}
 variable "packet_facility"      {
     type = "list"
 }
+# iofog user vars
+variable "iofogUser_name"       {}
+variable "iofogUser_surname"    {}
+variable "iofogUser_email"      {}
+variable "iofogUser_password"   {}
 
 # Store terraform state in GCS backend
 terraform {
@@ -86,48 +91,47 @@ module "packet_edge_nodes" {
     environment                 = "${var.environment}"
 }
 
+
 #############################################################
-# Install iofog on gke cluster using helm and install scripts 
+# Iofogctl to install iofog and configure agents 
 #############################################################
-module "iofog" {
-    source  = "../../modules/k8s_iofog"
+module "iofogctl_template" {
+    source  = "../../modules/iofogctl"
 
     operator_image              = "${var.operator_image}"
     kubelet_image               = "${var.kubelet_image}"
     controller_image            = "${var.controller_image}"
     connector_image             = "${var.connector_image}"
     controller_ip               = "${var.controller_ip}"
-    cluster_name                = "${module.kubernetes.name}"
-    kubeconfig                  = "${module.kubernetes.kubeconfig}"
-    script_path                 = "../../modules/k8s_iofog/setup.sh"
+    cluster_name                = "${var.environment}"
+    ssh_key                     = "${var.ssh_key}"
+    iofogUser_name              = "${var.iofogUser_name}"
+    iofogUser_surname           = "${var.iofogUser_surname}"
+    iofogUser_email             = "${var.iofogUser_email}"
+    iofogUser_password           = "${var.iofogUser_password}"
+    template_path               = "${file("../../environments_gke/develop/iofogctl_inventory.tpl")}"
 }
 
 ##########################################################################
-# Run ansible scripts againsts edge nodes to install agent
-# Queries for controller ip from GKE to pass to agents
-# Expects env variable PACKAGE_CLOUD_CREDS populated to pass to ansible
-# Takes in `package_cloud_creds` to install agent from snapshot repo
+# Run iofogctl to install agent and deploy ecn
+# Queries for controller ip from GKE to pass to iofogctl
+# Expects env variable PACKAGE_CLOUD_CREDS populated to pass to iofogctl
 ##########################################################################
-resource "null_resource" "ansible" {
+resource "null_resource" "iofogctl_deploy" {
     triggers {
         build_number = "${timestamp()}"
     }
-    # Fetch the controller ip from iofog installation to pass to agent configuration
-    # Run ansible playbook against user provided edge nodes to install agents 
+
+    # use iofogctl to deploy iofoc ecn and configure agents
+    # this will use the config template rendered by iofogctl module
     provisioner "local-exec" {
-        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml -i edge_hosts.ini --private-key=${var.ssh_key} -e \"agent_repo=${var.agent_repo} agent_version=${var.agent_version} package_cloud_creds=$PACKAGE_CLOUD_TOKEN controller_ip=$TF_VAR_controller_ip\""
+        command = "gcloud --quiet beta container clusters get-credentials ${var.environment} --region ${var.gcp_region} --project ${var.project_id} && ls ~/.kube/"
     }
-    # Fetch Packet agent list
-    provisioner "local-exec" { 
-        command = "echo Running Agent provisioning on Packet nodes: ${join(",", module.packet_edge_nodes.edge_nodes)}"
-    }
-    # Fetch the controller ip from iofog installation to pass to agent configuration
-    # Run ansible playbook against packet edge nodes to install agents
     provisioner "local-exec" {
-        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip package_cloud_creds=$PACKAGE_CLOUD_TOKEN agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
+        command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
     }
     depends_on = [
-        "module.iofog",
-        "module.packet_edge_nodes"
+        "module.iofogctl_template",
+        "module.kubernetes"
     ]
 }

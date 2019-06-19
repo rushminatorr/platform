@@ -6,8 +6,8 @@ gcp_region          = "us-west1"
 # iofog vars
 controller_ip       = "35.233.155.125" # Static ip for loadbalancer, eompty is fine.
 # iofog images
-controller_image    = "gcr.io/focal-freedom-236620/controller:1.0.38"
-connector_image     = "gcr.io/focal-freedom-236620/connector:rc-1.0.4"
+controller_image    = "gcr.io/focal-freedom-236620/controller:6a992"
+connector_image     = "gcr.io/focal-freedom-236620/connector:1.0.4"
 operator_image      = "gcr.io/focal-freedom-236620/operator:rc-1.0.0"
 kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-1.0.0"
 
@@ -24,3 +24,9 @@ plan_arm            = "c2.large.arm"
 ssh_key             = "~/.ssh/azure"
 agent_version       = "1.0.14-b1245"
 agent_repo          = "dev"
+
+# iofog user vars
+iofogUser_name      = "develop"
+iofogUser_surname   = "edgeworx"          
+iofogUser_email     = "develop@edgeworx.io"          
+iofogUser_password  = ""     
