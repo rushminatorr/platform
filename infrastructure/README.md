@@ -65,7 +65,7 @@ In the user directory, run:
 | `iofogUser_name`       | *name for registration with controller*                      |
 | `iofogUser_surname`    | *surname for registration with controller*                   |
 | `iofogUser_email`      | *email to use to register with controller*                   |
-| `iofogUser_password`   | *password for user registeration with controller*            |
+| `iofogUser_password`   | *password(length >=8) for user registeration with controller*|
     
 ## Iofoctl for Agent Configuration
 

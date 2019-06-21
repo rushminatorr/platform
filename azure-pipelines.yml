@@ -86,7 +86,7 @@ steps:
 
 - script: |
     echo 'set package cloud token as env var needed for agent installation from snapshots'
-    export PACKAGE_CLOUD_AGENT_TOKEN=$(agentPackageCloudToken)
+    export PACKAGE_CLOUD_TOKEN=$(agentPackageCloudToken)
     
     echo 'Running Terraform apply...'
     terraform apply -var-file=vars.tfvars -var 'ssh_key=$(Agent.TempDirectory)/azure_ssh_key' -var 'iofogUser_password=$(iofogUserPasswordDevelop)' -auto-approve
