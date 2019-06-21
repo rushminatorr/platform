@@ -12,5 +12,5 @@ controllers:
     connector: "${connector_image}"
     operator: "${operator_image}"
     kubelet: "${kubelet_image}"
-agents: []
+agents: ${agent_list}
 microservices: []

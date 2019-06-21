@@ -3,6 +3,7 @@
 #############################################################
 variable "project_id"       {}
 variable "network_name"     {}
+variable "region"       {}
 
 # Use vpc module to setup vpc, subnets and pribvate secondary subnets
 module "vpc" {
@@ -16,7 +17,7 @@ module "vpc" {
         {
             subnet_name             = "${var.network_name}-subnet-01"
             subnet_ip               = "10.10.10.0/24"
-            subnet_region           = "us-west1"
+            subnet_region           = "${var.region}"
             subnet_private_access   = "true"
             subnet_flow_logs        = "true"
         }

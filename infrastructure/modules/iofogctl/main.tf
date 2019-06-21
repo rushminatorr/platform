@@ -10,6 +10,9 @@ variable "iofogUser_name"           {}
 variable "iofogUser_surname"        {}
 variable "iofogUser_email"          {}
 variable "iofogUser_password"       {}
+variable "agent_list"      {
+    type = "list"
+}
 
 data "template_file" "iofogctl" {
     template                        = "${var.template_path}"
@@ -25,8 +28,10 @@ data "template_file" "iofogctl" {
         iofogUser_surname           = "${var.iofogUser_surname}"
         iofogUser_email             = "${var.iofogUser_email}"
         iofogUser_password          = "${var.iofogUser_password}"
+        agent_list                  = "${jsonencode(var.agent_list)}"
     }
 }
+
 resource "null_resource" "export_rendered_template" {
     triggers {
         build_number = "${timestamp()}"

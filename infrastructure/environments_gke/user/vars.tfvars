@@ -1,7 +1,7 @@
 # Dev variables
 project_id          = "focal-freedom-236620"
 environment         = "rushrush" 
-gcp_region          = "us-west1"
+gcp_region          = "us-west2"
 
 # iofog vars
 controller_ip       = "" # Static ip for loadbalancer, eompty is fine.
@@ -15,18 +15,21 @@ kubelet_image       = "gcr.io/focal-freedom-236620/kubelet:rc-1.0.0"
 packet_project_id   = "880125b9-d7b6-43c3-99f5-abd1af3ce879"
 operating_system    = "ubuntu_16_04"
 packet_facility     = ["sjc1", "ewr1"]             
-count_x86           = "0"
+count_x86           = "1"
 plan_x86            = "c1.small.x86"
 count_arm           = "0"
 plan_arm            = "c2.large.arm"
-
-# used by ansible for agent configuration
+# used by ansible for agent configuration on packet
 ssh_key             = "~/.ssh/azure"
-agent_version       = "1.0.14-b1245"
-agent_repo          = "dev"
 
 # iofog user vars
 iofogUser_name      = "rush"
 iofogUser_surname   = "edgeworx"          
 iofogUser_email     = "rush@edgeworx.io"          
-iofogUser_password  = ""     
+iofogUser_password  = "testtest"     
+
+# You will need to export the agent snapshot package cloud token as env var(PACKAGE_CLOUD_CREDS) to access the dev repo
+# uncomment these if using dev repo
+# agent_repo          = "dev" 
+# agent_version       = "1.0.14-b1245"
+

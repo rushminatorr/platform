@@ -6,8 +6,12 @@ variable "connector_image"      {}
 variable "kubelet_image"        {}
 variable "operator_image"       {}
 variable "ssh_key"              {}
-variable "agent_version"        {}
-variable "agent_repo"           {}
+variable "agent_version"        {
+     default = ""
+}
+variable "agent_repo"           {
+     default = ""
+}
 variable "controller_ip"        {
     default = ""
 }
@@ -26,6 +30,10 @@ variable "iofogUser_name"       {}
 variable "iofogUser_surname"    {}
 variable "iofogUser_email"      {}
 variable "iofogUser_password"   {}
+variable "agent_list"      {
+    type = "list"
+    default = []
+}
 
 # Store terraform state in GCS backend
 terraform {
@@ -58,6 +66,7 @@ module "gcp_network" {
 
     project_id                  = "${var.project_id}"
     network_name                = "${var.environment}"
+    region                      = "${var.gcp_region}"
 }
 
 #############################################################
@@ -91,7 +100,6 @@ module "packet_edge_nodes" {
     environment                 = "${var.environment}"
 }
 
-
 #############################################################
 # Iofogctl to install iofog and configure agents 
 #############################################################
@@ -108,8 +116,9 @@ module "iofogctl_template" {
     iofogUser_name              = "${var.iofogUser_name}"
     iofogUser_surname           = "${var.iofogUser_surname}"
     iofogUser_email             = "${var.iofogUser_email}"
-    iofogUser_password           = "${var.iofogUser_password}"
-    template_path               = "${file("../../environments_gke/develop/iofogctl_inventory.tpl")}"
+    iofogUser_password          = "${var.iofogUser_password}"
+    agent_list                  = "${var.agent_list}"
+    template_path               = "${file("../../environments_gke/iofogctl_inventory.tpl")}"
 }
 
 ##########################################################################
@@ -128,10 +137,37 @@ resource "null_resource" "iofogctl_deploy" {
         command = "gcloud --quiet beta container clusters get-credentials ${var.environment} --region ${var.gcp_region} --project ${var.project_id} && ls ~/.kube/"
     }
     provisioner "local-exec" {
-        command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml"
+        command = "export AGENT_VERSION=${var.agent_version} && iofogctl create namespace iofog && iofogctl deploy -f ../iofogctl_inventory.yaml"
     }
     depends_on = [
         "module.iofogctl_template",
         "module.kubernetes"
     ]
+}
+
+##########################################################################
+# Install and provision Agent software on packet hosts
+##########################################################################
+resource "null_resource" "packet_agent_deploy" {
+    triggers {
+        build_number = "${timestamp()}"
+    }
+    # Fetch Packet agent list
+    provisioner "local-exec" { 
+        command = "echo Running Agent provisioning on Packet nodes: ${join(",", module.packet_edge_nodes.edge_nodes)}"
+    }
+    # Fetch the controller ip from iofog installation to pass to agent configuration
+    # Run ansible playbook against packet edge nodes to install agents
+    provisioner "local-exec" {
+        command = "export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && ansible-playbook ../../ansible/agent.yml --private-key=${var.ssh_key} -e \"controller_ip=$TF_VAR_controller_ip package_cloud_creds=$PACKAGE_CLOUD_TOKEN agent_repo=${var.agent_repo} agent_version=${var.agent_version} \" -i \"${join(",", module.packet_edge_nodes.edge_nodes)}\","
+    }
+
+    depends_on = [
+        "null_resource.iofogctl_deploy",
+        "module.packet_edge_nodes"
+    ]
+}
+
+output "packet_instance_ip_addrs" {
+  value = "${module.packet_edge_nodes.edge_nodes}"
 }
