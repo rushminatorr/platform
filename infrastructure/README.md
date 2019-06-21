@@ -27,8 +27,8 @@ Install tools:
 
 Account tokens:
 - packet account token exported as an environment variable for packet provider. Command: `export PACKET_AUTH_TOKEN=xxxxx`
-- package_cloud account token exported as a terraforn environment variable. Command: `export PACKAGE_CLOUD_CREDS=xxxxx`
-- gcloud account token to deploy to GCP
+- package_cloud account token exported id you are using agent snapshot repo. Command: `export PACKAGE_CLOUD_CREDS=xxxxx`
+- gcloud account token to deploy to GCP `export GOOGLE_APPLICATION_CREDENTIALS=path-to-json`
 
 ## Usage
 
@@ -67,15 +67,7 @@ In the user directory, run:
 | `iofogUser_email`      | *email to use to register with controller*                   |
 | `iofogUser_password`   | *password for user registeration with controller*            |
     
-## Ansible Playbook for Agent Configuration
-
-We use ansible to configure edge nodes with Agent software. You can provide an inventory with the remote hosts details to provision agents. See sample inventory `edge_hosts.ini`. 
-
-See sample command Terraform used to run the playbook to provision agents. From the user environment folder, run the following command. This uses the `agent.yml` playbook under the ansible folder. 
-
-```
-ansible-playbook ../../agent.yml --private-key=<<PATH_TO_SSH_KEY>> -e \"controller_ip=<<CONTROLLER_IP>> agent_repo=<<AGENT_REPO>> agent_version=<<AGENT_VERSION>> package_cloud_creds=<<PACKAGE_CLOUD_CREDS>>\" -i edge_hosts.ini
-```
+## Iofoctl for Agent Configuration
 
 If you plan to use snapshot repo, you will need to provide package cloud token, leave it empty if installing released version. 
 
