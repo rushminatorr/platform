@@ -28,7 +28,7 @@ data "template_file" "iofogctl" {
         iofogUser_surname           = "${var.iofogUser_surname}"
         iofogUser_email             = "${var.iofogUser_email}"
         iofogUser_password          = "${var.iofogUser_password}"
-        agent_list                  = "${jsonencode(var.agent_list)}"
+        agent_list                  = "${replace(jsonencode(var.agent_list), "/\"([0-9]+\\.?[0-9]*)\"/", "$1")}"
     }
 }
 

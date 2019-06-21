@@ -131,9 +131,6 @@ resource "null_resource" "iofogctl_deploy" {
     provisioner "local-exec" {
         command = "export AGENT_VERSION=${var.agent_version} && iofogctl create namespace iofog && iofogctl deploy -f iofogctl_inventory.yaml -n iofog"
     }
-    provisioner "local-exec" {
-        command = "export AGENT_VERSION=${var.agent_version} && iofogctl deploy -f iofogctl_inventory.yaml -n iofog"
-    }
     depends_on = [
         "module.iofogctl_template",
         "module.kubernetes"
@@ -162,6 +159,18 @@ resource "null_resource" "packet_agent_deploy" {
         "module.packet_edge_nodes"
     ]
 }
+
+# resource "null_resource" "packet_agent_deploy" {
+#     count = "${var.count_x86 + var.count_arm}" 
+
+#     provisioner "local-exec" {
+#         command = "export AGENT_VERSION=${var.agent_version}  && export TF_VAR_controller_ip=$(kubectl get svc controller --template=\"{{range.status.loadBalancer.ingress}}{{.ip}}{{end}}\" -n iofog) && iofogctl deploy agent packet_agent_${count.index} --user root --key-file ${var.ssh_key} --host ${module.packet_edge_nodes.edge_nodes[count.index]}"
+#     }
+#     depends_on = [
+#         "null_resource.iofogctl_deploy",
+#         "module.packet_edge_nodes"
+#     ]
+# }
 
 output "packet_instance_ip_addrs" {
   value = "${module.packet_edge_nodes.edge_nodes}"

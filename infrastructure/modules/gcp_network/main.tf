@@ -51,4 +51,7 @@ resource "google_compute_firewall" "firewall" {
         protocol = "tcp"
         ports    = ["22", "80", "443", "8080", "51121"]
     }
+    depends_on = [
+        "module.vpc"
+    ]
 }

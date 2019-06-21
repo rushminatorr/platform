@@ -10,9 +10,9 @@ The project spins up an infrastructure stack on Google Cloud Platform which cons
 
 Optionally, there is a choice to deploy x86 or arm nodes on Packet.
 
-After the infrastructure setup, iofog ECN is deployed on the GKE cluster using the iofog Helm chart.
+After the infrastructure setup, iofog ECN is deployed on the GKE cluster using the iofogctl.
 
-Once the control plane is setup, ansible is used to configure edge nodes provided by user as an inventory in the hosts.ini file, and any packet nodes cretaed. Iofog agent software id deployed on these, configured and registerd with the iofog controller in the control plane. 
+Once the control plane is setup, ansible is used to configure edge nodes created by packet. Iofog agent software id deployed on these, configured and registerd with the iofog controller in the control plane. 
 
 ![components](docs/components.png)
 
@@ -22,12 +22,12 @@ Install tools:
 - Terraform (v11*)
 - Ansible
 - gcloud
-- Helm
 - Kubectl
+- Iofogctl
 
 Account tokens:
 - packet account token exported as an environment variable for packet provider. Command: `export PACKET_AUTH_TOKEN=xxxxx`
-- package_cloud account token exported id you are using agent snapshot repo. Command: `export PACKAGE_CLOUD_CREDS=xxxxx`
+- package_cloud account token exported only if you are using agent snapshot repo. Command: `export PACKAGE_CLOUD_CREDS=xxxxx`
 - gcloud account token to deploy to GCP `export GOOGLE_APPLICATION_CREDENTIALS=path-to-json`
 
 ## Usage
@@ -79,4 +79,4 @@ If you plan to use snapshot repo, you will need to provide package cloud token, 
 
 - Delete a particular terraform resource: `terraform destroy -target=null_resource.iofog -var-file=vars.tfvars -auto-approve`
 
-- Terraform OUtput `terraform output -module=packet_edge_nodes`
+- Terraform Output `terraform output ` or `terraform output -module=packet_edge_nodes`
