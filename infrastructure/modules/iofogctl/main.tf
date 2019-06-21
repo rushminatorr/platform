@@ -1,3 +1,5 @@
+variable "project_id"               {}
+variable "region"                   {}
 variable "controller_image"         {}
 variable "connector_image"          {}
 variable "kubelet_image"            {}
@@ -10,7 +12,9 @@ variable "iofogUser_name"           {}
 variable "iofogUser_surname"        {}
 variable "iofogUser_email"          {}
 variable "iofogUser_password"       {}
-variable "agent_list"      {
+variable "agent_repo"               {}
+variable "agent_version"            {}
+variable "agent_list"               {
     type = "list"
 }
 
@@ -39,4 +43,27 @@ resource "null_resource" "export_rendered_template" {
     provisioner "local-exec" {
         command = "cat > iofogctl_inventory.yaml <<EOL\n${join(",\n", data.template_file.iofogctl.*.rendered)}\nEOL"
     }
+}
+
+##########################################################################
+# Run iofogctl to install agent and deploy ecn
+# Queries for controller ip from GKE to pass to iofogctl
+# Expects env variable PACKAGE_CLOUD_CREDS populated to pass to iofogctl
+##########################################################################
+resource "null_resource" "iofogctl_deploy" {
+    triggers {
+        build_number = "${timestamp()}"
+    }
+
+    # use iofogctl to deploy iofoc ecn and configure agents
+    # this will use the config template rendered by iofogctl module
+    provisioner "local-exec" {
+        command = "gcloud --quiet beta container clusters get-credentials ${var.cluster_name} --region ${var.region} --project ${var.project_id}"
+    }
+    # provisioner "local-exec" {
+    #     command = "export AGENT_VERSION=${var.agent_version} && iofogctl create namespace iofog || true && iofogctl deploy -f iofogctl_inventory.yaml -n iofog"
+    # }
+    depends_on = [
+        "null_resource.export_rendered_template"
+    ]
 }

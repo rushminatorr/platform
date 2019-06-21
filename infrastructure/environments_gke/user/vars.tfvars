@@ -2,6 +2,7 @@
 project_id          = "YOUR GOOGLE PROJECT ID"
 environment         = "YOUR CHOICE OF NAME FOR YOUR ENVIRONMENT" 
 gcp_region          = "us-west2"
+gcp_service_account = "GCP SERVICE ACCOUNT"
 
 # iofog vars
 controller_ip       = "" # Static ip for loadbalancer, eompty is fine.
