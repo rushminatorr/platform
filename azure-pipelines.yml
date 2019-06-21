@@ -5,13 +5,29 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- bash: |
-    ls
+- script: |
     echo $(iofogctlPackageCloudToken)
-    curl -s https://$(iofogctl-snapshot-packagecloud-token):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
+    curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
     sudo apt-get install iofogctl=0.0.3-b1504
     iofogctl version
   displayName: 'Install iofogctl'
+# - task: DownloadBuildArtifacts@0
+#   inputs:
+#     buildType: 'specific'
+#     project: '02af0506-ca6c-431d-8a76-cd5bfa0783c0'
+#     pipeline: '16'
+#     buildVersionToDownload: 'latestFromBranch'
+#     branchName: 'refs/heads/develop'
+#     downloadType: 'single'
+#     itemPattern: '**deb'
+#     downloadPath: '$(System.ArtifactsDirectory)'
+#   displayName: 'Donwload iofogctl deb'
+
+# - script: |
+#     ls $(System.ArtifactsDirectory)/
+#     sudo dpkg -i $(System.ArtifactsDirectory)/_eclipse-iofog.iofogctl/iofogctl/$pkg
+#     iofogctl version
+#   displayName: 'Install iofogctl'
 
 - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
   inputs:
@@ -19,20 +35,23 @@ steps:
   displayName: 'Install Terraform'
 
 - task: DownloadSecureFile@1
-  displayName: 'Download secure file'
+  displayName: 'Download secure file for azure to access gcp'
   inputs:
     secureFile: 'azure-gcp.json'
 
-- bash: |
-    repo=$(lsb_release -c -s)
-    echo $repo
-    echo "deb http://packages.cloud.google.com/apt $repo main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+- script: |
+    echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
     sudo apt-get update && sudo apt-get install google-cloud-sdk
 
-    gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
+    # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
+    echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
+  displayName: 'Install gcloud'
+
+- script: |
+    gcloud --quiet auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
     gcloud --quiet config set project focal-freedom-236620
-  displayName: 'set up gcloud'
+  displayName: 'Init gcloud'
 
 - task: DownloadSecureFile@1 
   inputs:
@@ -44,23 +63,34 @@ steps:
     secureFile: packet.token
   displayName: 'Download secure file for packet provider authentication'
 
-- bash: |
+- script: |
     echo 'change ssh key file permissions'
     chmod 400 $(Agent.TempDirectory)/azure_ssh_key
     echo 'move packet file to appropriate directory'
-    cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/packet.token
+    cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/packet.token
     echo 'Running Terraform init...'
     terraform init
-  workingDirectory: '$(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/develop'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
   displayName: 'Terraform Init'
 
-- bash: |
-    echo 'set package cloud token as env var needed for agent installation'
-    export PACKAGE_CLOUD_TOKEN=$(package_cloud_credentials)
+- script: |
+    gcloud container clusters get-credentials develop --region us-west1
+    if [ $? -eq 0 ]; then
+        echo 'Running Terraform destroy...'
+        terraform destroy -var-file=vars.tfvars -var ssh_key=$(Agent.TempDirectory)/azure -auto-approve
+    else
+        echo 'No develop cluster found'
+    fi
+  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+  displayName: 'Terraform Destroy if cluster exists'
+
+- script: |
+    echo 'set package cloud token as env var needed for agent installation from snapshots'
+    export PACKAGE_CLOUD_AGENT_TOKEN=$(agentPackageCloudToken)
     
     echo 'Running Terraform apply...'
-    terraform apply -var-file=vars.tfvars -var ssh_key=$(Agent.TempDirectory)/azure_ssh_key -auto-approve
-  workingDirectory: '$(System.DefaultWorkingDirectory)/_eclipse-iofog_platform/infrastructure/environments_gke/develop'
+    terraform apply -var-file=vars.tfvars -var 'ssh_key=$(Agent.TempDirectory)/azure_ssh_key' -var 'iofogUser_password=$(iofogUserPasswordDevelop)' -auto-approve
+  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
   displayName: 'Terraform Apply'
 
 - task: DownloadSecureFile@1
@@ -68,6 +98,6 @@ steps:
   inputs:
     secureFile: 'develop-msv-config.yaml'
 
-- bash: './install.sh $(Agent.TempDirectory)/develop-msv-config.yaml'
-  workingDirectory: '$(System.DefaultWorkingDirectory)/_Edgeworx_ProductDemos'
+- script: |
+    python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
   displayName: 'Deploy microservice'
