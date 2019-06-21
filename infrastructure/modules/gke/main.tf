@@ -72,18 +72,3 @@ resource "null_resource" "fetch_kubeconfig" {
     }
     depends_on = ["module.gke"]
 }
-
-resource "null_resource" "encrypt_kubeconfig" {
-    provisioner "local-exec" {
-        command = "gcloud kms encrypt --location global --keyring azure-deployment-secrets --key k8s-secrets --plaintext-file ~/.kube/config --ciphertext-file ~/.kube/${module.gke.name}.kubeconfig.encrypted"
-
-        environment = {
-            CLUSTER   = "${module.gke.name}"
-        }
-    }
-    # Store encrypted kubeconfig in storage bucket
-    provisioner "local-exec" {
-        command = "gsutil cp ~/.kube/${module.gke.name}.kubeconfig.encrypted gs://azure-build-secrets"
-    }
-    depends_on = ["null_resource.fetch_kubeconfig"]
-}
