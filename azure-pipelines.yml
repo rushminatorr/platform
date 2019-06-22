@@ -51,7 +51,7 @@ steps:
     secureFile: packet.token
   displayName: 'Download secure file for packet provider authentication'
 
-  - task: DownloadSecureFile@1
+- task: DownloadSecureFile@1
   inputs:
     secureFile: develop.tfvars
   displayName: 'Download terraform vars file for develop'
