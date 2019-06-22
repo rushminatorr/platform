@@ -267,6 +267,7 @@ do_install_docker() {
 
 do_uninstall_iofog() {
 	if command_exists iofog-agent; then
+		sudo service iofog-agent stop
 		case "$lsb_dist" in
 			ubuntu|debian|raspian)
 				sudo apt remove -y --purge iofog-agent || true
@@ -287,12 +288,12 @@ do_install_iofog() {
 	case "$lsb_dist" in
 		ubuntu)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash"
-			$sh_c "apt-get install -y iofog-agent-dev"
+			$sh_c "apt-get install -y iofog-agent"
 			command_status=$?
 			;;
 		fedora|centos)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.rpm.sh | $sh_c "bash"
-			$sh_c "yum install -y iofog-agent-dev"
+			$sh_c "yum install -y iofog-agent"
 			command_status=$?
 			;;
 		debian|raspbian)
@@ -300,7 +301,7 @@ do_install_iofog() {
 				$sh_c "apt-get install -y -qq net-tools"
 			fi
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash"
-			$sh_c "apt-get install -y iofog-agent-dev"
+			$sh_c "apt-get install -y iofog-agent"
 			command_status=$?
 			if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
 				$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
@@ -322,12 +323,12 @@ do_install_iofog_dev() {
 	case "$lsb_dist" in
 		ubuntu)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token | $sh_c "bash"
-			$sh_c "apt-get install -y iofog-agent="$version""
+			$sh_c "apt-get install -y iofog-agent-dev="$version""
 			command_status=$?
 			;;
 		fedora|centos)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.rpm.sh$token  | $sh_c "bash"
-			$sh_c "yum install -y iofog-agent-"$version"-1.noarch"
+			$sh_c "yum install -y iofog-agent-dev-"$version"-1.noarch"
 			command_status=$?
 			;;
 		debian|raspbian)
@@ -335,7 +336,7 @@ do_install_iofog_dev() {
 				$sh_c "apt-get install -y -qq net-tools"
 			fi
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token  | $sh_c "bash"
-			$sh_c "apt-get install -y iofog-agent="$version""
+			$sh_c "apt-get install -y iofog-agent-dev="$version""
 			command_status=$?
 			if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
 				$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
