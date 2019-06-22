@@ -97,6 +97,6 @@ steps:
   inputs:
     secureFile: 'develop-msv-config.yaml'
 
-- script: |
-    python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
-  displayName: 'Deploy microservice'
+# - script: |
+#     python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
+#   displayName: 'Deploy microservice'
