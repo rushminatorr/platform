@@ -60,9 +60,9 @@ resource "null_resource" "iofogctl_deploy" {
     provisioner "local-exec" {
         command = "gcloud --quiet beta container clusters get-credentials ${var.cluster_name} --region ${var.region} --project ${var.project_id}"
     }
-    # provisioner "local-exec" {
-    #     command = "export AGENT_VERSION=${var.agent_version} && iofogctl create namespace iofog || true && iofogctl deploy -f iofogctl_inventory.yaml -n iofog"
-    # }
+    provisioner "local-exec" {
+        command = "export AGENT_VERSION=${var.agent_version} && iofogctl create namespace iofog || iofogctl deploy -f iofogctl_inventory.yaml -n iofog"
+    }
     depends_on = [
         "null_resource.export_rendered_template"
     ]
