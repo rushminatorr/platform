@@ -267,6 +267,7 @@ do_install_docker() {
 
 do_uninstall_iofog() {
 	if command_exists iofog-agent; then
+		sudo service iofog-agent stop
 		case "$lsb_dist" in
 			ubuntu|debian|raspian)
 				sudo apt remove -y --purge iofog-agent || true
