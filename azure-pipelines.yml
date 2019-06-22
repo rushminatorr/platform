@@ -5,13 +5,6 @@ pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
-- bash: |
-    echo $(iofogctlPackageCloudToken)
-    curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
-    sudo apt-get install iofogctl=1.0.0-b1557
-    iofogctl version
-  displayName: 'Install iofogctl'
-
 - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
   inputs:
     terraformVersion: 0.11.14
@@ -40,6 +33,13 @@ steps:
     gcloud --quiet auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
     gcloud --quiet config set project focal-freedom-236620
   displayName: 'Init gcloud'
+
+- script: |
+    echo $(iofogctlPackageCloudToken)
+    curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
+    sudo apt-get install iofogctl=1.0.0-b1557
+    iofogctl version
+  displayName: 'Install iofogctl'
 
 - task: DownloadSecureFile@1 
   inputs:
