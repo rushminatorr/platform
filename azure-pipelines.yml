@@ -46,7 +46,7 @@ steps:
 - script: |
     echo $(iofogctlPackageCloudToken)
     curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
-    sudo apt-get install iofogctl=1.0.0-b1557
+    sudo apt-get install iofogctl=0.0.0-b1623
     iofogctl version
   displayName: 'Install iofogctl'
 
@@ -75,16 +75,16 @@ steps:
   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
   displayName: 'Terraform Init'
 
-- script: |
-    gcloud container clusters get-credentials develop --region us-west1
-    if [ $? -eq 0 ]; then
-        echo 'Running Terraform destroy...'
-        terraform destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -var ssh_key=$(Agent.TempDirectory)/azure -auto-approve
-    else
-        echo 'No develop cluster found'
-    fi
-  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-  displayName: 'Terraform Destroy if cluster exists'
+# - script: |
+#     gcloud container clusters get-credentials develop --region us-west1
+#     if [ $? -eq 0 ]; then
+#         echo 'Running Terraform destroy...'
+#         terraform destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -var ssh_key=$(Agent.TempDirectory)/azure -auto-approve
+#     else
+#         echo 'No develop cluster found'
+#     fi
+#   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+#   displayName: 'Terraform Destroy if cluster exists'
 
 - script: |
     echo 'set package cloud token as env var needed for agent installation from snapshots'
