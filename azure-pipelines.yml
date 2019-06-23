@@ -113,3 +113,8 @@ steps:
 # - script: |
 #     python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
 #   displayName: 'Deploy microservice'
+
+- script: |
+    docker pull iofog/test-runner-develop:latest
+    docker run iofog/test-runner-develop:latest -v $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop/iofogctl_inventory.yaml:~/conf/environment.yaml
+  displayName: 'run tests'
