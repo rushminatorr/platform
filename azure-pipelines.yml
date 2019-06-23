@@ -7,12 +7,12 @@ trigger:
     exclude:
       - README.md
   
-  schedules:
-  - cron: "0 14 * * *"
-    displayName: Daily build
-    branches:
-      include:
-      - develop
+schedules:
+- cron: "0 14 * * *"
+  displayName: Daily build
+  branches:
+    include:
+    - develop
 
 variables:
   group: 'pipelines'
