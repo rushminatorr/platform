@@ -1,6 +1,6 @@
 #!/bin/sh
-set -e
 set -x
+set -e
 
 SUPPORT_MAP="
 x86_64-centos-7
@@ -146,7 +146,7 @@ disable_package_preconfiguration() {
 add_repo_if_not_exists() {
 	repo="$1"
 	if ! grep -Fxq "$repo" /etc/apt/sources.list; then
-		(set -x; $sh_c "echo \"$repo\" >> /etc/apt/sources.list")
+		($sh_c "echo \"$repo\" >> /etc/apt/sources.list")
 	fi
 }
 
@@ -171,7 +171,6 @@ add_initial_apt_repos_if_not_exist() {
 do_install_java() {
 	echo "# Installing java 8..."
 	echo
-	set -x
 	# if variable need_to_install equals to 1 java install is required
 	need_to_install=1
 	if command_exists java; then
@@ -205,8 +204,6 @@ do_install_java() {
 	else
 		command_status=777
 	fi
-	
-	set +x
 }
 
 handle_docker_unsuccessful_installation() {
@@ -236,7 +233,7 @@ do_install_docker() {
 	# Check that Docker 18.09.2 or greater is installed
 	if command_exists docker; then
 		docker_version=$(docker -v | sed 's/.*version \(.*\),.*/\1/' | tr -d '.')
-		if [ "$docker_version" -ge 18092 ]; then
+		if [ "$docker_version" -ge 18090 ]; then
 			echo "# Docker $docker_version already installed"
 			return
 		fi
@@ -244,7 +241,6 @@ do_install_docker() {
 	echo "# Installing Docker..."
 	echo
 	sleep 3
-	set -x
 	curl -fsSL https://get.docker.com/ | sh
 
 	handle_docker_unsuccessful_installation
@@ -261,30 +257,17 @@ do_install_docker() {
 		$sh_c "service docker restart"
 		command_status=$?
 	fi
-	
-	set +x
 }
 
-do_uninstall_iofog() {
+do_stop_iofog() {
 	if command_exists iofog-agent; then
 		sudo service iofog-agent stop
-		case "$lsb_dist" in
-			ubuntu|debian|raspian)
-				sudo apt remove -y --purge iofog-agent || true
-				sudo apt remove -y --purge iofog-agent-dev || true
-				;;
-			fedora|centos)
-				yum remove -y iofog-agent || true
-				yum remove -y iofog-agent-dev || true
-				;;
-		esac
 	fi
 }
 
 do_install_iofog() {
 	echo "# Installing ioFog agent..."
 	echo
-	set -x
 	case "$lsb_dist" in
 		ubuntu)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent/script.deb.sh | $sh_c "bash"
@@ -311,15 +294,12 @@ do_install_iofog() {
 			fi
 			;;
 	esac
-
-	set +x
 }
 
 do_install_iofog_dev() {
 	echo "# Installing ioFog agent dev version: "$version 
 	echo
 	token="?master_token="$token
-	set -x
 	case "$lsb_dist" in
 		ubuntu)
 			curl -s https://packagecloud.io/install/repositories/iofog/iofog-agent-snapshots/script.deb.sh$token | $sh_c "bash"
@@ -346,8 +326,6 @@ do_install_iofog_dev() {
 			fi
 			;;
 	esac
-
-	set +x
 }
 
 do_install() {
@@ -452,22 +430,19 @@ do_install() {
 	# Run setup for each distro accordingly
 	set +e
 	add_initial_apt_repos_if_not_exist
+	set -e
 	
 	do_install_java
-	check_command_status $command_status "# Java 8 has been successfully installed" "# Java 8 installation failed. Please proceed with installation manually" "# Java 8 is already installed" "# Failed to update java version. Already installed java 8 will be used"
 	
 	do_install_docker
-	check_command_status $command_status "# Docker has been installed successfully" "# Docker installation failed. Please proceed with installation manually" "# Docker is already installed"
 	
-	do_uninstall_iofog
+	do_stop_iofog
 
 	if [ "$env" = "dev" ]
 	then
 		do_install_iofog_dev 
-		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	else
 		do_install_iofog
-		check_command_status $command_status "# ioFog agent has been installed successfully" "# ioFog agent installation failed. Please proceed with installation manually" "# ioFog agent is already intalled"
 	fi
 }
 
