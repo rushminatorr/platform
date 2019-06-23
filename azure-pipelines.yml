@@ -27,7 +27,7 @@ steps:
 - task: DownloadSecureFile@1
   inputs:
     secureFile: packet.token
-  displayName: 'Download vars file for terraform'
+  displayName: 'Download packet token for terraform'
 
 - script: |
     echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
@@ -87,7 +87,8 @@ steps:
         echo 'No develop cluster found'
     fi
   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-  displayName: 'Terraform Destroy if cluster exists'
+  displayName: 'Terraform Destroy if cluster exists and if it is a scheduled build'
+  condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))
 
 - script: |
     echo 'set package cloud token as env var needed for agent installation from snapshots'
