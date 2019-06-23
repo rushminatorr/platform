@@ -171,13 +171,10 @@ add_initial_apt_repos_if_not_exist() {
 do_install_java() {
 	echo "# Installing java 8..."
 	echo
-	# if variable need_to_install equals to 1 java install is required
-	need_to_install=1
 	if command_exists java; then
         java8_version="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | grep 1.8 | cut -d'_' -f 2)"
-        [ "$java8_version" -ge "181" ]; need_to_install=$?
-    fi
-	if [ "$need_to_install" -ne "0" ]; then
+	fi
+	if [ "$java8_version" -lt "181" ]; then
 		os_arch=$(getconf LONG_BIT)
 		is_arm=""
 		if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
