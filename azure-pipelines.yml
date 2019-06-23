@@ -46,7 +46,7 @@ steps:
 - script: |
     echo $(iofogctlPackageCloudToken)
     curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
-    sudo apt-get install iofogctl
+    sudo apt-get install iofogctl=0.0.0-b1629
     iofogctl version
   displayName: 'Install iofogctl'
 
