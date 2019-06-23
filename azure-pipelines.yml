@@ -1,3 +1,12 @@
+trigger:
+  branches:
+    include:
+      - develop
+
+  paths:
+    exclude:
+      - README.md
+
 variables:
   group: 'pipelines'
 
