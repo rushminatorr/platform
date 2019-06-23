@@ -6,6 +6,13 @@ trigger:
   paths:
     exclude:
       - README.md
+  
+  schedules:
+  - cron: "0 14 * * *"
+    displayName: Daily build
+    branches:
+      include:
+      - develop
 
 variables:
   group: 'pipelines'
@@ -115,7 +122,17 @@ steps:
 #   displayName: 'Deploy microservice'
 
 - script: |
+    ls 
     docker pull iofog/test-runner-develop:latest
-    docker run iofog/test-runner-develop:latest -v iofogctl_inventory.yaml:~/conf/environment.yaml
+    docker run iofog/test-runner-develop:latest -name testrunner -v iofogctl_inventory.yaml:~/conf/environment.yaml
+    docker cp testrunner:/home/ .
   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
   displayName: 'run tests'
+
+# Publish Test Results
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/TEST-*.xml'
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+  displayName: 'Publish Test Results'
