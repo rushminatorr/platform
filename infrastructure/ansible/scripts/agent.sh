@@ -52,7 +52,7 @@ get_distribution() {
 	fi
 	# Returning an empty string here should be alright since the
 	# case statements don't act unless you provide an actual value
-	echo "$lsb_dist"
+	echo "# Our distro is '$lsb_dist'"
 }
 
 # Check if this is a forked Linux distro
@@ -265,6 +265,20 @@ do_stop_iofog() {
 	fi
 }
 
+
+do_check_iofog_on_arm() {
+    if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
+
+        echo "# We re on ARM ($(uname -m)) : Updating config.xml to use correct docker_url"
+		$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
+
+		echo "# Restarting iofog-agent service"
+		$sh_c "service iofog-agent stop"
+		sleep 3
+		$sh_c "service iofog-agent start"
+	fi
+}
+
 do_install_iofog() {
 	echo "# Installing ioFog agent..."
 	echo
@@ -288,12 +302,8 @@ do_install_iofog() {
 			command_status=$?
 			;;
 	esac
-	if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
-		$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
-		$sh_c "service iofog-agent stop"
-		sleep 3
-		$sh_c "service iofog-agent start"
-	fi
+
+	do_check_iofog_on_arm
 }
 
 do_install_iofog_dev() {
@@ -320,9 +330,8 @@ do_install_iofog_dev() {
 			command_status=$?
 			;;
 	esac
-	if [ "$lsb_dist" = "raspbian" ] || [ "$(uname -m)" = "armv7l" ] || [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "armv8" ]; then
-		$sh_c 'sed -i -e "s|<docker_url>.*</docker_url>|<docker_url>tcp://127.0.0.1:2375/</docker_url>|g" /etc/iofog-agent/config.xml'
-	fi
+
+	do_check_iofog_on_arm
 }
 
 do_install() {
