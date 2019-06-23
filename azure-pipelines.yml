@@ -11,7 +11,7 @@ variables:
   group: 'pipelines'
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'Ubuntu-16.04'
 
 steps:
 - task: charleszipp.azure-pipelines-tasks-terraform.azure-pipelines-tasks-terraform-installer.TerraformInstaller@0
@@ -116,5 +116,6 @@ steps:
 
 - script: |
     docker pull iofog/test-runner-develop:latest
-    docker run iofog/test-runner-develop:latest -v $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop/iofogctl_inventory.yaml:~/conf/environment.yaml
+    docker run iofog/test-runner-develop:latest -v iofogctl_inventory.yaml:~/conf/environment.yaml
+  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
   displayName: 'run tests'
