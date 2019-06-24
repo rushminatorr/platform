@@ -17,104 +17,85 @@ pool:
 
 steps:
 
-  - task: TerraformInstaller@0
-    displayName: 'Install Terraform'
-    inputs:
-      terraformVersion: '0.11.14'
-
   - task: DownloadSecureFile@1
     displayName: 'Download secure file for azure to access gcp'
     inputs:
       secureFile: 'azure-gcp.json'
 
   - task: DownloadSecureFile@1
+    displayName: 'Download packet token for terraform'
     inputs:
       secureFile: packet.token
-    displayName: 'Download packet token for terraform'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file for ssh access for agents'
+    inputs:
+      secureFile: 'azure_ssh_key'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download terraform vars file for develop'
+    inputs:
+      secureFile: develop.tfvars
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file - healthcare microservice app config'
+    inputs:
+      secureFile: 'develop-msv-config.yaml'
 
   - script: |
       echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
       curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
       sudo apt-get update && sudo apt-get install google-cloud-sdk
 
-      # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
-      echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
-    displayName: 'Install gcloud'
-
-  - script: |
-      gcloud --quiet auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS
+      gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
       gcloud --quiet config set project focal-freedom-236620
-    displayName: 'Init gcloud'
+    displayName: 'Install and init gcloud'
 
   - script: |
-      echo $(iofogctlPackageCloudToken)
       curl -s https://$(iofogctlPackageCloudToken):@packagecloud.io/install/repositories/iofog/iofogctl-snapshots/script.deb.sh | sudo bash
       sudo apt-get install iofogctl=0.0.0-b1630
       iofogctl version
     displayName: 'Install iofogctl'
 
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: 'azure_ssh_key'
-    displayName: 'Download secure file for ssh access for agents'
-
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: packet.token
-    displayName: 'Download secure file for packet provider authentication'
-
-  - task: DownloadSecureFile@1
-    inputs:
-      secureFile: develop.tfvars
-    displayName: 'Download terraform vars file for develop'
-
   - script: |
-      echo 'change ssh key file permissions'
-      echo 'move ssh file to home for vars file to pick it up from'
-      cp $(Agent.TempDirectory)/azure_ssh_key ~/azure_ssh_key
-      chmod 400 ~/azure_ssh_key
-
-      echo 'move packet file to appropriate directory'
       cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/packet.token
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
     displayName: 'Copy secret files'
 
-  - task: TerraformCLI@0
+  - task: Terraform@2
+    displayName: 'Install and init terraform'
     inputs:
-      command: 'init'
-      workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+      TemplatePath: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+      Arguments: 'init'
+      InstallTerraform: true
+      Version: '0.11.14'
+      UseAzureSub: false
 
-  - script: |
-      gcloud container clusters get-credentials develop --region us-west1
-      if [ $? -eq 0 ]; then
-          echo 'Running Terraform destroy...'
-          terraform destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -auto-approve
-      else
-          echo 'No develop cluster found'
-      fi
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-    displayName: 'Terraform Destroy if cluster exists and if it is a scheduled build'
-    condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))
-
-  - script: |
-      echo 'set package cloud token as env var needed for agent installation from snapshots'
-      export PACKAGE_CLOUD_TOKEN=$(agentPackageCloudToken)
-
-      echo 'Running Terraform apply...'
-      terraform apply -var-file=$(Agent.TempDirectory)/develop.tfvars -var 'ssh_key=~/azure_ssh_key' \
-      -var 'controller_image=$(controller_image)' \
-      -var 'connector_image=$(connector_image)' \
-      -var 'operator_image=$(operator_image)' \
-      -var 'kubelet_image=$(kubelet_image)' \
-      -var 'agent_repo=$(agent_repo)' \
-      -var 'agent_version=$(agent_version)' -auto-approve
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-    displayName: 'Terraform Apply'
-
-  - task: DownloadSecureFile@1
-    displayName: 'Download secure file - healthcare microservice app config'
+  - task: Terraform@2
+    displayName: 'Destroy existing infrastructure'
+    continueOnError: true
     inputs:
-      secureFile: 'develop-msv-config.yaml'
+      TemplatePath: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+      Arguments: destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -auto-approve
+      InstallTerraform: false
+      UseAzureSub: false
+    # condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))  
+
+  - task: Terraform@2
+    displayName: 'Deploy infrastructure'
+    env:
+      PACKAGE_CLOUD_TOKEN: $(agentPackageCloudToken)
+    inputs:
+      TemplatePath: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+      Arguments: |
+        apply -var-file=$(Agent.TempDirectory)/develop.tfvars -var 'ssh_key=$(Agent.TempDirectory)/azure_ssh_key' \
+              -var 'controller_image=$(controller_image)' \
+              -var 'connector_image=$(connector_image)' \
+              -var 'operator_image=$(operator_image)' \
+              -var 'kubelet_image=$(kubelet_image)' \
+              -var 'agent_repo=$(agent_repo)' \
+              -var 'agent_version=$(agent_version)' -auto-approve
+      InstallTerraform: false
+      UseAzureSub: false
 
   # - script: |
   #     python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
